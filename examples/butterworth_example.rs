@@ -13,11 +13,11 @@ fn main() {
     let img = open(img_path).expect("Failed to open image");
     let gray_img = img.to_luma8(); // Convert to grayscale
     // Define parameters for the Butterworth filter
-    let cutoff_frequency_ratio = 0.5; // Example value, adjust as needed
+    let cutoff_frequency_ratio = 0.005; // Example value, adjust as needed
     let high_pass = true; // true for high pass, false for low pass
-    let order = 2.0; // Order of the filter
+    let order = 1.8; // Order of the filter
     let squared_butterworth = true; // Use squared Butterworth filter
-    let npad = 1; // Padding size
+    let npad = 0; // Padding size
     // Apply the Butterworth filter
     let filtered_img = butterworth(
         &gray_img, 

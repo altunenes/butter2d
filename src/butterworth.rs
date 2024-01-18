@@ -1,4 +1,3 @@
-// butterworth.rs
 use ndarray::{Array, ArrayD, IxDyn,Zip};
 use std::f64::consts::PI;
 use rustfft::{FftPlanner, num_complex::Complex};
@@ -42,7 +41,10 @@ pub fn get_nd_butterworth_filter(
     }
 
     // Generate the Cartesian product of ranges
-    let grid: Vec<Vec<f64>> = ranges.iter().map(|r| r.iter().cloned()).multi_cartesian_product().collect();
+    let grid: Vec<Vec<f64>> = ranges[0].iter()
+        .cartesian_product(ranges[1].iter())
+        .map(|(&x, &y)| vec![x, y])
+        .collect();
 
     // Convert grid to ndarray
     let grid_shape = shape.iter().map(|&d| d).collect::<Vec<_>>();
@@ -60,7 +62,6 @@ pub fn get_nd_butterworth_filter(
 
     wfilt
 }
-
 /// Pad the image with edge value extension.
 fn pad_image(image: &GrayImage, npad: usize) -> DMatrix<Complex<f64>> {
     let (width, height) = image.dimensions();
