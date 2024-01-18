@@ -1,6 +1,6 @@
 use std::{fs, path::PathBuf};
 use image::{GrayImage, DynamicImage, open};
-use butter2d::butterworth; // Make sure butterworth is public in your crate
+use butter2d::butterworth; 
 
 fn get_image_path(relative_path: &str) -> PathBuf {
     let current_dir = std::env::current_dir().unwrap();
@@ -13,10 +13,10 @@ fn main() {
     let img = open(img_path).expect("Failed to open image");
     let gray_img = img.to_luma8(); // Convert to grayscale
     // Define parameters for the Butterworth filter
-    let cutoff_frequency_ratio = 0.05; // Example value, adjust as needed
+    let cutoff_frequency_ratio = 0.5; // Example value, adjust as needed
     let high_pass = true; // true for high pass, false for low pass
     let order = 2.0; // Order of the filter
-    let squared_butterworth = false; // Use squared Butterworth filter
+    let squared_butterworth = true; // Use squared Butterworth filter
     let npad = 1; // Padding size
     // Apply the Butterworth filter
     let filtered_img = butterworth(
