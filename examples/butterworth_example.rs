@@ -17,7 +17,7 @@ fn main() {
 
     // Parameters for Butterworth filter
     let cutoff_frequency_ratio = 0.01; // example value
-    let high_pass = true; // example value
+    let high_pass = false; // example value
     let order = 2.0; // example value
     let squared_butterworth = true; // example value
     let npad = 0; // example value for padding

@@ -65,14 +65,28 @@ pub fn get_nd_butterworth_filter(
     let ones = Array::from_elem(q2.dim(), Complex::new(1.0, 0.0));
     // Avoid the type mismatch by ensuring the types match for the addition
     let denominator = ones.clone() + (&q2 * factor.powi(2 * order as i32));
-    let mut wfilt = ones / denominator;
-    if high_pass {
-        wfilt = wfilt.mapv_into(|x| Complex::new(1.0, 0.0) - x);
-    }
-    if !squared_butterworth {
-        wfilt.mapv_inplace(|x| x.sqrt());
-    }
-
+    let mut wfilt = Array::from_shape_fn(IxDyn(shape), |idx| {
+        let len = shape.len();
+        let mut distance2 = 0.0;
+        for i in 0..len {
+            // Normalize frequency range from -0.5 to 0.5
+            let mut freq = idx[i] as f64;
+            if freq > shape[i] as f64 / 2.0 {
+                freq -= shape[i] as f64;
+            }
+            freq /= shape[i] as f64;
+            distance2 += freq.powi(2);
+        }
+        // Calculate the radius in the frequency domain
+        let radius = distance2.sqrt();
+        // Calculate the Butterworth filter response for this frequency
+        let response = 1.0 / (1.0 + (radius / factor).powf(order * 2.0));
+        // Determine high-pass or low-pass response
+        let response = if high_pass { 1.0 - response } else { response };
+        // Optionally square the response
+        let response = if squared_butterworth { response.powi(2) } else { response };
+        Complex::new(response, 0.0)
+    });
     wfilt
 }
 /// Pad the image with edge value extension.
