@@ -130,10 +130,15 @@ fn apply_fft_and_filter(
 
     // Normalize and convert to grayscale
     let max_val = ifft_image.iter().map(|c| c.norm()).fold(0.0, f64::max);
+    let min_val = ifft_image.iter().map(|c| c.norm()).fold(f64::INFINITY, f64::min);
     GrayImage::from_raw(
         ifft_image.ncols().try_into().unwrap(),
         ifft_image.nrows().try_into().unwrap(),
-        ifft_image.iter().map(|c| (c.norm() / max_val * 255.0) as u8).collect()
+        ifft_image.iter().map(|c| {
+            // Normalize to the range [0, 1] then scale to [0, 255]
+            let val = (c.norm() - min_val) / (max_val - min_val);
+            (val * 255.0) as u8
+        }).collect()
     ).unwrap()
 }
 /// Apply a Butterworth filter to enhance high or low frequency features.
