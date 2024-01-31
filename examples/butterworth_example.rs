@@ -1,6 +1,6 @@
 use std::{fs, path::PathBuf};
-use image::{GrayImage, DynamicImage, open};
-use butter2d::butterworth; 
+use image::{GrayImage, DynamicImage, open, Luma};
+use butter2d::{butterworth, visualize_filter};
 
 fn get_image_path(relative_path: &str) -> PathBuf {
     let current_dir = std::env::current_dir().unwrap();
@@ -11,15 +11,19 @@ fn main() {
     let img_path = get_image_path("images/Lena.png");
     // Read the image
     let img = open(img_path).expect("Failed to open image");
-    let gray_img = img.to_luma8(); // Convert to grayscale
-    // Define parameters for the Butterworth filter
-    let cutoff_frequency_ratio = 0.005; // Example value, adjust as needed
-    let high_pass = true; // true for high pass, false for low pass
-    let order = 1.8; // Order of the filter
-    let squared_butterworth = true; // Use squared Butterworth filter
-    let npad = 0; // Padding size
-    // Apply the Butterworth filter
-    let filtered_img = butterworth(
+
+    // Convert to grayscale
+    let gray_img = img.into_luma8();
+
+    // Parameters for Butterworth filter
+    let cutoff_frequency_ratio = 0.01; // example value
+    let high_pass = true; // example value
+    let order = 2.0; // example value
+    let squared_butterworth = true; // example value
+    let npad = 0; // example value for padding
+
+    // Apply Butterworth filter
+    let (filtered_img, filter) = butterworth(
         &gray_img, 
         cutoff_frequency_ratio, 
         high_pass, 
@@ -28,13 +32,11 @@ fn main() {
         npad
     );
 
-    // Ensure output directory exists
-    let output_dir = get_image_path("output");
-    if !output_dir.exists() {
-        fs::create_dir_all(&output_dir).expect("Failed to create output directory");
-    }
+    // Save the filtered image
+    let filtered_img_path = get_image_path("images/Lena_filtered.png");
+    filtered_img.save(filtered_img_path).expect("Failed to save filtered image");
 
-    // Save the output
-    let output_path = output_dir.join("filtered_Lena.png");
-    filtered_img.save(output_path).expect("Failed to save image");
+    // Visualize and save the Butterworth filter
+    visualize_filter(&filter);
+    // Note: The visualize_filter function saves the filter visualization as "butterworth_filter_visualization.png"
 }
