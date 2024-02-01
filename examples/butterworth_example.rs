@@ -26,8 +26,8 @@ fn main() {
     // Manually convert to grayscale
     let gray_img = convert_to_grayscale(&img);
     // Parameters for Butterworth filter
-    let cutoff_frequency_ratio = 0.5; // example value
-    let high_pass = false; // example value
+    let cutoff_frequency_ratio: f64 = 0.1; // example value
+    let high_pass = true; // example value
     let order = 2.0; // example value
     let squared_butterworth = true; // example value
     let npad = 0; // example value for padding
@@ -40,7 +40,7 @@ fn main() {
         squared_butterworth, 
         npad
     );
-    let filtered_img_path = get_image_path("images/Lena_filtered_rust.png");
+    let filtered_img_path = get_image_path("C:/Users/enes-/OneDrive/Masaüstü/pyt/Lena_filtered_rust3.png");
     filtered_img.save(filtered_img_path).expect("Failed to save filtered image");
     // Visualize and save the Butterworth filter
     visualize_filter(&filter);

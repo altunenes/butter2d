@@ -116,31 +116,28 @@ fn apply_fft_and_filter(
 ) -> GrayImage {
     let fft_image = fft_2d(padded_image.clone());
 
-    // Check dimensions for mismatch
+    // Ensure dimensions match
     assert_eq!(fft_image.nrows(), butterworth_filter.nrows());
     assert_eq!(fft_image.ncols(), butterworth_filter.ncols());
 
     // Apply the filter
     let filtered_image = fft_image.zip_map(butterworth_filter, |img_val, filter_val| img_val * filter_val);
+
+    // Perform inverse FFT
     let ifft_image = ifft_2d(filtered_image);
 
-    // Find min and max values to scale the intensity
-    let mut min_val = f64::MAX;
-    let mut max_val = f64::MIN;
-    for val in ifft_image.iter() {
-        let norm = val.norm();
-        if norm < min_val { min_val = norm; }
-        if norm > max_val { max_val = norm; }
-    }
-    
-    // Scale values between 0 and 255
+    // Normalize the real part of the inverse FFT to the range [0, 255]
+    let real_ifft: Vec<f64> = ifft_image.iter().map(|c| c.re).collect();
+    let min_val = *real_ifft.iter().min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
+    let max_val = *real_ifft.iter().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
     let scale = 255.0 / (max_val - min_val);
+
     GrayImage::from_raw(
-        ifft_image.ncols().try_into().unwrap(),
-        ifft_image.nrows().try_into().unwrap(),
-        ifft_image.iter().map(|c| {
-            let val = ((c.norm() - min_val) * scale).round();
-            val.min(255.0).max(0.0) as u8 // Ensure values are within the byte range
+        ifft_image.ncols() as u32,
+        ifft_image.nrows() as u32,
+        real_ifft.iter().map(|&val| {
+            let scaled_val = (val - min_val) * scale;
+            scaled_val.min(255.0).max(0.0) as u8 // Clamp the value to [0, 255]
         }).collect()
     ).unwrap()
 }
