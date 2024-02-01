@@ -116,28 +116,31 @@ fn apply_fft_and_filter(
 ) -> GrayImage {
     let fft_image = fft_2d(padded_image.clone());
 
-    // Debugging: Print dimensions of FFT image and Butterworth filter
-    println!("FFT image dimensions: ({}, {})", fft_image.nrows(), fft_image.ncols());
-    println!("Butterworth filter dimensions: ({}, {})", butterworth_filter.nrows(), butterworth_filter.ncols());
+    // Check dimensions for mismatch
+    assert_eq!(fft_image.nrows(), butterworth_filter.nrows());
+    assert_eq!(fft_image.ncols(), butterworth_filter.ncols());
 
-    if fft_image.nrows() != butterworth_filter.nrows() || fft_image.ncols() != butterworth_filter.ncols() {
-        panic!("Mismatch in dimensions between FFT image and Butterworth filter");
-    }
-
-    // Apply the filter directly without converting to another type
+    // Apply the filter
     let filtered_image = fft_image.zip_map(butterworth_filter, |img_val, filter_val| img_val * filter_val);
     let ifft_image = ifft_2d(filtered_image);
 
-    // Normalize and convert to grayscale
-    let max_val = ifft_image.iter().map(|c| c.norm()).fold(0.0, f64::max);
-    let min_val = ifft_image.iter().map(|c| c.norm()).fold(f64::INFINITY, f64::min);
+    // Find min and max values to scale the intensity
+    let mut min_val = f64::MAX;
+    let mut max_val = f64::MIN;
+    for val in ifft_image.iter() {
+        let norm = val.norm();
+        if norm < min_val { min_val = norm; }
+        if norm > max_val { max_val = norm; }
+    }
+    
+    // Scale values between 0 and 255
+    let scale = 255.0 / (max_val - min_val);
     GrayImage::from_raw(
         ifft_image.ncols().try_into().unwrap(),
         ifft_image.nrows().try_into().unwrap(),
         ifft_image.iter().map(|c| {
-            // Normalize to the range [0, 1] then scale to [0, 255]
-            let val = (c.norm() - min_val) / (max_val - min_val);
-            (val * 255.0) as u8
+            let val = ((c.norm() - min_val) * scale).round();
+            val.min(255.0).max(0.0) as u8 // Ensure values are within the byte range
         }).collect()
     ).unwrap()
 }
