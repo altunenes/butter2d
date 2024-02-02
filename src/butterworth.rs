@@ -63,7 +63,6 @@ pub fn get_nd_butterworth_filter(
 
     // Calculate the Butterworth filter using the correct grid
     let ones = Array::from_elem(q2.dim(), Complex::new(1.0, 0.0));
-    // Avoid the type mismatch by ensuring the types match for the addition
     let denominator = ones.clone() + (&q2 * factor.powi(2 * order as i32));
     let mut wfilt = Array::from_shape_fn(IxDyn(shape), |idx| {
         let len = shape.len();
@@ -82,7 +81,12 @@ pub fn get_nd_butterworth_filter(
         // Calculate the Butterworth filter response for this frequency
         let response = 1.0 / (1.0 + (radius / factor).powf(order * 2.0));
         // Determine high-pass or low-pass response
-        let response = if high_pass { 1.0 - response } else { response };
+        let response = if high_pass { 
+            // Invert the logic for high-pass to make cutoff behavior consistent
+            (radius / factor).powf(order * 2.0) / (1.0 + (radius / factor).powf(order * 2.0))
+        } else { 
+            response 
+        };
         // Optionally square the response
         let response = if squared_butterworth { response.powi(2) } else { response };
         Complex::new(response, 0.0)
