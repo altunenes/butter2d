@@ -4,18 +4,39 @@ use image::GrayImage;
 use fft2d::nalgebra::{fft_2d, ifft_2d};
 use image::imageops::resize;
 use nalgebra::DMatrix;
-/// Create a N-dimensional Butterworth mask for an FFT
-/// 
+/// Constructs an N-dimensional Butterworth filter mask for Fourier Transform operations.
+///
+/// This function generates a mask to be applied in the frequency domain, useful for
+/// filtering images or signals to either enhance or suppress frequencies. The Butterworth
+/// filter is known for its smooth frequency response and is parameterized to control
+/// the sharpness of its cutoff.
+///
 /// # Arguments
-/// * `shape` - Shape of the n-dimensional FFT and mask.
-/// * `factor` - Fraction of mask dimensions where the cutoff should be.
-/// * `order` - Controls the slope in the cutoff region.
-/// * `high_pass` - Whether the filter is high pass or low pass.
-/// * `real` - Whether the FFT is of a real or complex image.
-/// * `squared_butterworth` - If true, the square of the Butterworth filter is used.
-/// 
+/// * `shape` - A slice representing the dimensions of the n-dimensional FFT and the resulting mask.
+///   Specifies the size of the output mask, matching the FFT's output dimensions.
+/// * `factor` - A floating-point value representing the fraction of the mask dimensions at which
+///   the cutoff frequency is set. It determines the boundary between the passband and the stopband
+///   in normalized frequency units (0 to 1).
+/// * `order` - A floating-point value that controls the steepness or slope of the filter's
+///   transition from passband to stopband. Higher values result in a steeper transition.
+/// * `high_pass` - A boolean indicating the filter type. If `true`, the filter is a high-pass filter
+///   (attenuating frequencies below the cutoff). If `false`, it's a low-pass filter (attenuating
+///   frequencies above the cutoff).
+/// * `real` - A boolean indicating whether the FFT represents a real (`true`) or complex (`false`)
+///   image or signal. This parameter may affect the symmetry and size of the output mask.
+/// * `squared_butterworth` - A boolean specifying whether to use the square of the Butterworth
+///   filter (`true`) or not (`false`). Using the square can alter the filter's characteristics,
+///   particularly its sharpness and transition slope.
+///
 /// # Returns
-/// * `ArrayD<Complex<f64>>` - The FFT mask.
+/// * `ArrayD<Complex<f64>>` - An n-dimensional array containing the complex-valued Butterworth filter
+///   mask. The mask is designed to be multiplied directly with the FFT of an image or signal.
+/// # Notes
+/// The Butterworth filter is widely used in signal processing and image processing due to its
+/// maximally flat frequency response in the passband and no ripples in the stopband. The `order`
+/// parameter can significantly affect the filter's performance, especially in terms of transition
+/// bandwidth and attenuation rate. Careful selection of `factor` and `order` is recommended to
+/// meet specific filtering requirements.
 pub fn get_nd_butterworth_filter(
     shape: &[usize],
     factor: f64,
@@ -80,6 +101,38 @@ pub fn get_nd_butterworth_filter(
     });
     wfilt
 }
+/// Pads and resizes an image to the nearest powers of two dimensions.
+///
+/// This function is designed to prepare an image for Fourier Transform operations by padding its
+/// dimensions to the nearest powers of two. Padding is symmetrically applied to both the width and
+/// height of the image to minimize edge effects during FFT processing. The image is resized using
+/// nearest neighbor interpolation to maintain the integrity of the original pixel values as closely
+/// as possible.
+///
+/// # Arguments
+/// * `image` - A reference to a `GrayImage` representing the input image to be padded and resized.
+///   The `GrayImage` type is part of the `image` crate, which represents an image in grayscale format.
+/// * `npad` - The number of pixels to symmetrically pad around the edges of the image before resizing.
+///   This value is applied to all sides of the image, effectively increasing the total width and height
+///   by `2 * npad`. The padding operation ensures that the final dimensions are suitable for FFT by
+///   extending them to the nearest powers of two.
+///
+/// # Returns
+/// * `DMatrix<Complex<f64>>` - A matrix of complex numbers where the real part represents the padded
+///   and resized image, and the imaginary part is set to zero. This format is compatible with FFT
+///   operations that require complex input. The `DMatrix` type comes from the `nalgebra` crate and
+///   represents a dynamic two-dimensional matrix.
+///
+/// # Notes
+/// The resizing step uses the nearest neighbor interpolation to avoid introducing interpolation
+/// artifacts that could affect the Fourier Transform analysis. This method is chosen for its simplicity
+/// and effectiveness in preserving the original image's pixel values. However, users should be aware
+/// that resizing to significantly larger dimensions can introduce pixelation due to the nearest neighbor
+/// method.
+///
+/// The resulting matrix is intended for use in FFT-based processing, where having dimensions as powers
+/// of two can significantly optimize computation time. This preconditioning step is crucial for
+/// achieving efficient performance in frequency domain analyses and operations.
 pub fn pad_image(image: &GrayImage, npad: usize) -> DMatrix<Complex<f64>> {
     let (width, height) = image.dimensions();
     //println!("Original image dimensions: ({}, {})", width, height);
@@ -95,7 +148,23 @@ pub fn pad_image(image: &GrayImage, npad: usize) -> DMatrix<Complex<f64>> {
     
     )
 }
-/// Apply FFT, Butterworth filter, and inverse FFT.
+/// This function orchestrates the core steps in frequency domain filtering: it first applies FFT to
+/// the input image, then applies the Butterworth filter mask, and finally performs an inverse FFT to
+/// return the filtered image back to the spatial domain. A crucial normalization step is included after
+/// the inverse FFT to ensure the output image has appropriate brightness levels.
+///
+/// # Arguments
+/// * `padded_image` - A reference to a `DMatrix<Complex<f64>>` representing the padded input image
+///   in the complex domain, ready for FFT processing. The matrix should have dimensions that are powers
+///   of two for optimal FFT performance.
+/// * `butterworth_filter` - A reference to a `DMatrix<Complex<f64>>` representing the Butterworth filter
+///   mask. This matrix should have the same dimensions as `padded_image` to ensure element-wise multiplication
+///   is properly aligned.
+///
+/// # Returns
+/// * `GrayImage` - The filtered image, transformed back into the spatial domain and normalized to
+///   utilize the full range of grayscale values (0-255). The `GrayImage` type is part of the `image` crate,
+///   representing an image in grayscale format.
 fn apply_fft_and_filter(
     padded_image: &DMatrix<Complex<f64>>,
     butterworth_filter: &DMatrix<Complex<f64>>,
@@ -125,7 +194,71 @@ fn apply_fft_and_filter(
         // If the output is essentially uniform, treat it as zero
         GrayImage::new(ifft_image.ncols() as u32, ifft_image.nrows() as u32)
     } }
-/// Apply a Butterworth filter to enhance high or low frequency features.
+/// Applies a Butterworth filter to an image to enhance or suppress frequency components.
+///
+/// This function performs spatial domain to frequency domain transformation, applies a Butterworth
+/// filter to enhance high or low frequency features based on the specified parameters, and then
+/// transforms the result back to the spatial domain. The function is designed to work with grayscale
+/// images and utilizes FFT (Fast Fourier Transform) for efficient frequency domain processing.
+///
+/// # Arguments
+/// * `image` - A reference to a `GrayImage` representing the input image. The `GrayImage` is part of
+///   the `image` crate and should contain grayscale pixel values.
+/// * `cutoff_frequency_ratio` - A floating-point value between 0.0 and 0.5 that determines the cutoff
+///   frequency as a ratio of the Nyquist frequency, which is half of the sampling rate according to the
+///   Nyquist criterion. This parameter thus defines the boundary between the filter's passband and stopband
+///   in terms of cycles per pixel in the spatial frequency domain. For a low-pass filter, selecting a cutoff
+///   frequency ratio of 0.5 results in a non-aggressive filter, affecting only the highest frequencies just
+///   below the Nyquist limit. The aggressiveness of the low-pass filter increases as the cutoff frequency ratio
+///   approaches 0.0, progressively attenuating a broader range of higher frequencies. Conversely, for a high-pass
+///   filter, a cutoff frequency ratio of 0.5 corresponds to a very aggressive filter, significantly attenuating
+///   frequencies across most of the spectrum, while a ratio near 0.0 results in a less aggressive filter,
+///   primarily affecting only the lowest frequencies and preserving most of the higher frequencies.
+/// * `high_pass` - A boolean indicating the type of filter to apply. If `true`, the function applies a
+///   high-pass filter, attenuating frequencies below the cutoff. If `false`, a low-pass filter is applied,
+///   attenuating frequencies above the cutoff.
+/// * `order` - A floating-point value that specifies the order of the Butterworth filter. The order
+///   determines the steepness of the filter's transition between the passband and stopband.
+/// * `squared_butterworth` - A boolean indicating whether to square the Butterworth filter response.
+///   Squaring the filter can sharpen the transition between the passband and stopband.
+/// * `npad` - The number of pixels by which to pad the input image before applying the FFT. Padding can
+///   help reduce edge effects and improve the filter's performance.
+///
+/// # Returns
+/// A tuple containing two elements:
+/// * `GrayImage` - The filtered image, returned to the spatial domain and normalized to utilize the full
+///   grayscale range. The normalization ensures the image's visibility and contrast are enhanced according
+///   to the filter's effect.
+/// * `DMatrix<Complex<f64>>` - The Butterworth filter used in the frequency domain. This matrix represents
+///   the filter mask applied to the FFT of the input image. It can be useful for analysis or applying the
+///   same filter to multiple images.
+///
+/// # Panics
+/// The function panics if the `cutoff_frequency_ratio` is not in the range [0.0, 0.5], ensuring that
+/// filter parameters are within acceptable bounds for meaningful frequency domain processing.
+///
+/// # Normalization Process
+/// Unlike the skimage implementation in Python, this Rust version explicitly normalizes the output
+/// image after applying the inverse FFT. This step adjusts the pixel values to span the full grayscale
+/// range, enhancing visibility and contrast. The normalization process calculates the minimum and maximum
+/// values in the resulting image and scales the pixel values to lie between 0 and 255.
+///
+/// This manual normalization is essential because the FFT and inverse FFT operations can produce
+/// pixel values outside the standard grayscale range. Without normalization, the resulting image might
+/// appear too dark or too bright, or contrast may be lost. It's worth noting that even slight numerical
+/// differences in the normalization process between Rust and Python implementations can lead to subtle
+/// variations in the filtered images. Such differences are scientifically significant in image processing
+/// tasks, as they may affect the visibility of features or the interpretation of results. These variations
+/// are typically due to the inherent differences in how Rust and Python handle floating-point arithmetic
+/// and image data structures.
+///
+/// # Scientific Implications
+/// The inclusion of normalization is critical for maintaining the scientific integrity of the image
+/// processing pipeline. By ensuring that the output image uses the full grayscale range effectively,
+/// this function helps preserve the quantitative relationship between different regions of the image.
+/// However, users should be aware of the potential for minor discrepancies between results obtained
+/// with this Rust implementation and those from other languages or libraries, particularly in tasks
+/// requiring precise quantitative analysis.
 pub fn butterworth(
     image: &GrayImage,
     cutoff_frequency_ratio: f64,
