@@ -1,3 +1,7 @@
+[![Rust](https://github.com/altunenes/butter2d/actions/workflows/rust.yml/badge.svg)](https://github.com/altunenes/butter2d/actions/workflows/rust.yml) 
+[![crates.io](https://img.shields.io/crates/v/butter2d.svg)](https://crates.io/crates/butter2d)
+[![docs.rs](https://docs.rs/butter2d/badge.svg)](https://docs.rs/butter2d)
+
 # butter2d
 ![butter](https://github.com/altunenes/butter2d/assets/54986652/9ffa3304-85b3-4b80-9ded-61024a520d35)
 
@@ -30,6 +34,9 @@ To visually demonstrate the effectiveness and similarity of our Rust implementat
 ### Usage
 
 Here's a quick example of applying a high-pass Butterworth filter to an image:
+```rust
+cargo add butter2d
+```
 
 ```rust
 use image::{GrayImage, open};
