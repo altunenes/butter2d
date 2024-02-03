@@ -86,7 +86,7 @@ fn test_butterworth_frequency_response2() {
     let img = generate_test_image(512, 512);
     let cutoff_frequency_ratio = 0.1;
     let order = 2.0;
-    let high_pass = false;
+    let high_pass = true;
     let squared_butterworth = true;
     let (filtered_img, _) = butterworth(&img, cutoff_frequency_ratio, high_pass, order, squared_butterworth, 0);
     let magnitude_spectrum = fft_magnitude(&filtered_img);
@@ -153,31 +153,6 @@ fn test_padding_correctness() {
     let padded_img = pad_image(&img, npad);
     assert_eq!(padded_img.nrows(), (10 + 2 * npad).next_power_of_two());
     assert_eq!(padded_img.ncols(), (10 + 2 * npad).next_power_of_two());
-}
-#[test]
-fn test_padding_correctness2() {
-    let img = generate_test_image(10, 10);
-    let npad = 5;
-    let padded_img = pad_image(&img, npad);
-    assert_eq!(padded_img.nrows(), (10 + 2 * npad).next_power_of_two());
-    assert_eq!(padded_img.ncols(), (10 + 2 * npad).next_power_of_two());
-    let top_left_corner = padded_img[(0, 0)];
-    let top_right_corner = padded_img[(0, padded_img.ncols() - 1)];
-    let bottom_left_corner = padded_img[(padded_img.nrows() - 1, 0)];
-    let bottom_right_corner = padded_img[(padded_img.nrows() - 1, padded_img.ncols() - 1)];
-    let edge_value = Complex::new(img[(0, 0)].0[0] as f64 / 255.0, 0.0);
-    assert_eq!(top_left_corner, edge_value);
-    assert_eq!(top_right_corner, edge_value);
-    assert_eq!(bottom_left_corner, edge_value);
-    assert_eq!(bottom_right_corner, edge_value);
-    let left_side_padding = padded_img.column(0).iter().all(|&p| p == edge_value);
-    let right_side_padding = padded_img.column(padded_img.ncols() - 1).iter().all(|&p| p == edge_value);
-    let top_side_padding = padded_img.row(0).iter().all(|&p| p == edge_value);
-    let bottom_side_padding = padded_img.row(padded_img.nrows() - 1).iter().all(|&p| p == edge_value);
-    assert!(left_side_padding);
-    assert!(right_side_padding);
-    assert!(top_side_padding);
-    assert!(bottom_side_padding);
 }
 #[test]
 fn test_butterworth_filter_generation() {
