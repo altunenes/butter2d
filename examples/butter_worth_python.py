@@ -1,3 +1,4 @@
+#This for the compare outputs
 from skimage.filters import butterworth
 import matplotlib.pyplot as plt
 import cv2

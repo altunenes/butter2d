@@ -8,7 +8,6 @@ def compute_fft(image):
     magnitude_spectrum = np.log(np.abs(fshift) + 1) 
     phase_spectrum = np.angle(fshift)
     return magnitude_spectrum, phase_spectrum
-
 def compare_spectrums(rust_img, python_img, output_path):
     """Compare the magnitude and phase spectrums of two images."""
     rust_magnitude, rust_phase = compute_fft(rust_img)
