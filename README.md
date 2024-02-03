@@ -1,4 +1,6 @@
-# Rust Implementation of the Butterworth Filter
+# butter2d
+
+Pure Rust Implementation of the Butterworth Filter
 
 This crate provides a pure Rust implementation of the Butterworth filter, designed for high-performance spatial frequency filtering of images. It is inspired by and seeks to replicate the functionality of the Butterworth filter as implemented in the popular Python library, [scikit-image](https://github.com/scikit-image/scikit-image/blob/2ac3e141e8d2e31aa0ec10afc3a935396b0618fc/skimage/filters/_fft_based.py#L58-L185).
 
