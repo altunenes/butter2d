@@ -1,3 +1,29 @@
+//! # High-Pass Butterworth Filter Example
+//!
+//! This example demonstrates how to apply a high-pass Butterworth filter to an image using the `butter2d` crate.
+//! It outlines the steps to read an image, convert it to grayscale, apply a high-pass Butterworth filter with specified
+//! parameters, and then save the filtered image. This process is useful for emphasizing or isolating high-frequency
+//! components in an image, such as edges or fine details, by attenuating lower frequencies.
+//!
+//! ## Steps Overview:
+//! 1. **Grayscale Conversion**: Converts a color image to grayscale because the Butterworth filter is applied to
+//!    single-channel images in this example.
+//! 2. **Reading and Preparing the Image**: Loads an image from a file, manually converts it to grayscale, and prepares
+//!    it for filtering.
+//! 3. **Applying the Butterworth Filter**: Specifies parameters for the high-pass Butterworth filter (cutoff frequency,
+//!    filter order, etc.) and applies it to the grayscale image.
+//! 4. **Saving the Filtered Image**: Saves the filtered image to a new file for review and further use.
+//!
+//! ## Usage:
+//! To run this example, an image file at `images/astronaut_gray.png` relative to the current working directory,
+//! and ensure there's a writable directory at `output/` for the filtered image. Adjust the filter parameters as needed
+//! to achieve the desired high-pass filtering effect.
+//!
+//! ## Function Descriptions:
+//! - `convert_to_grayscale`: Takes an `RgbImage` and converts it to a `GrayImage` using weighted luminance calculation.
+//! - `get_image_path`: Constructs an absolute path to an image file based on a relative path provided.
+//! - `main`: Orchestrates the image loading, filtering, and saving processes using specified Butterworth filter parameters.
+
 use std::path::PathBuf;
 use image::{GrayImage,open, Luma};
 use butter2d::butterworth;
