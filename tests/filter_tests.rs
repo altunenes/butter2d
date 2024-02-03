@@ -1,14 +1,12 @@
-use butter2d::{butterworth};
-use image::{open,GrayImage, Luma,RgbImage,Pixel};
-use ndarray::{Array,Array2, ArrayD, s,Zip};
-use rustfft::{FftPlanner, num_complex::Complex};
-use fft2d::nalgebra::{fft_2d, ifft_2d};
+use butter2d::{butterworth,pad_image,get_nd_butterworth_filter};
+use image::{GrayImage, Luma};
+use ndarray::{Array,Array2,s,IxDyn};
+use rustfft::num_complex::Complex;
+use fft2d::nalgebra::fft_2d;
 use nalgebra::DMatrix;
-use ndarray_npy::read_npy;
-use std::path::PathBuf;
 fn generate_test_image(width: u32, height: u32) -> GrayImage {
     let mut img = GrayImage::new(width, height);
-    for (x, y, pixel) in img.enumerate_pixels_mut() {
+    for (x, _, pixel) in img.enumerate_pixels_mut() {
         let intensity = ((x as f64 / width as f64) * 255.0) as u8;
         *pixel = Luma([intensity]);
     }
@@ -78,17 +76,13 @@ fn fft_magnitude(image: &GrayImage) -> Array2<f64> {
     }
     let dmatrix = DMatrix::from_vec(nrows, ncols, data);
     let fft_result = fft_2d(dmatrix);
-
-    // Convert the fft_result (DMatrix) to an ndarray::Array2<f64> containing the magnitude
     let magnitude_array = Array::from_shape_fn((nrows, ncols), |(row, col)| {
         fft_result[(row, col)].norm()
     });
-
     magnitude_array
 }
 #[test]
 fn test_butterworth_frequency_response2() {
-    // The setup remains the same
     let img = generate_test_image(512, 512);
     let cutoff_frequency_ratio = 0.1;
     let order = 2.0;
@@ -150,5 +144,62 @@ fn test_butterworth_frequency_response() {
         assert!(avg_center < avg_edge, "High-pass filter should attenuate low frequencies more than high frequencies.");
     } else {
         assert!(avg_center < avg_edge, "Low-pass filter should retain low frequencies more than high frequencies.");
+    }
+}
+#[test]
+fn test_padding_correctness() {
+    let img = generate_test_image(10, 10);
+    let npad = 5;
+    let padded_img = pad_image(&img, npad);
+    assert_eq!(padded_img.nrows(), (10 + 2 * npad).next_power_of_two());
+    assert_eq!(padded_img.ncols(), (10 + 2 * npad).next_power_of_two());
+}
+#[test]
+fn test_padding_correctness2() {
+    let img = generate_test_image(10, 10);
+    let npad = 5;
+    let padded_img = pad_image(&img, npad);
+    assert_eq!(padded_img.nrows(), (10 + 2 * npad).next_power_of_two());
+    assert_eq!(padded_img.ncols(), (10 + 2 * npad).next_power_of_two());
+    let top_left_corner = padded_img[(0, 0)];
+    let top_right_corner = padded_img[(0, padded_img.ncols() - 1)];
+    let bottom_left_corner = padded_img[(padded_img.nrows() - 1, 0)];
+    let bottom_right_corner = padded_img[(padded_img.nrows() - 1, padded_img.ncols() - 1)];
+    let edge_value = Complex::new(img[(0, 0)].0[0] as f64 / 255.0, 0.0);
+    assert_eq!(top_left_corner, edge_value);
+    assert_eq!(top_right_corner, edge_value);
+    assert_eq!(bottom_left_corner, edge_value);
+    assert_eq!(bottom_right_corner, edge_value);
+    let left_side_padding = padded_img.column(0).iter().all(|&p| p == edge_value);
+    let right_side_padding = padded_img.column(padded_img.ncols() - 1).iter().all(|&p| p == edge_value);
+    let top_side_padding = padded_img.row(0).iter().all(|&p| p == edge_value);
+    let bottom_side_padding = padded_img.row(padded_img.nrows() - 1).iter().all(|&p| p == edge_value);
+    assert!(left_side_padding);
+    assert!(right_side_padding);
+    assert!(top_side_padding);
+    assert!(bottom_side_padding);
+}
+#[test]
+fn test_butterworth_filter_generation() {
+    let shape = [64, 64];
+    let cutoff_frequency_ratio = 0.1;
+    let order = 2.0;
+    let high_pass = true;
+    let squared_butterworth = true;
+    let filter = get_nd_butterworth_filter(
+        &shape,
+        cutoff_frequency_ratio,
+        order,
+        high_pass,
+        true,
+        squared_butterworth,
+    );
+    assert_eq!(filter.dim(), IxDyn(&shape), "Filter dimensions mismatch");
+    let cutoff_index = (cutoff_frequency_ratio * shape[0] as f64).round() as usize;
+    let cutoff_value = filter[[cutoff_index, cutoff_index]].re;
+    if high_pass {
+        assert!(cutoff_value > 0.0, "High-pass filter cutoff response incorrect");
+    } else {
+        assert!(cutoff_value < 1.0, "Low-pass filter cutoff response incorrect");
     }
 }

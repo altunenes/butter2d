@@ -1,5 +1,5 @@
 mod butterworth;
-
-// Re-export the butterworth function for public use
 pub use butterworth::butterworth;
-pub use butterworth::visualize_filter;
+//for testing purposes:
+pub use butterworth::pad_image;
+pub use butterworth::get_nd_butterworth_filter;
