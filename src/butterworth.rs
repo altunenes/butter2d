@@ -96,12 +96,12 @@ pub fn get_nd_butterworth_filter(
 /// Pad the image with edge value extension.
 fn pad_image(image: &GrayImage, npad: usize) -> DMatrix<Complex<f64>> {
     let (width, height) = image.dimensions();
-    println!("Original image dimensions: ({}, {})", width, height);
+    //println!("Original image dimensions: ({}, {})", width, height);
 
     // Calculate the nearest power of 2 for each dimension
     let padded_width = (width as usize + 2 * npad).next_power_of_two() as u32;
     let padded_height = (height as usize + 2 * npad).next_power_of_two() as u32;
-    println!("Padded image dimensions: ({}, {})", padded_width, padded_height);
+    //println!("Padded image dimensions: ({}, {})", padded_width, padded_height);
 
     let padded_image = resize(image, padded_width, padded_height, image::imageops::FilterType::Nearest);
 
@@ -130,21 +130,27 @@ fn apply_fft_and_filter(
     // Perform inverse FFT
     let ifft_image = ifft_2d(filtered_image);
 
-    // Normalize the real part of the inverse FFT to the range [0, 255]
+    // Compute the range of the real parts
     let real_ifft: Vec<f64> = ifft_image.iter().map(|c| c.re).collect();
-    let min_val = *real_ifft.iter().min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
-    let max_val = *real_ifft.iter().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
-    let scale = 255.0 / (max_val - min_val);
-
-    GrayImage::from_raw(
-        ifft_image.ncols() as u32,
-        ifft_image.nrows() as u32,
-        real_ifft.iter().map(|&val| {
-            let scaled_val = (val - min_val) * scale;
-            scaled_val.min(255.0).max(0.0) as u8 // Clamp the value to [0, 255]
-        }).collect()
-    ).unwrap()
-}
+    let min_val = real_ifft.iter().fold(f64::INFINITY, |a, &b| a.min(b));
+    let max_val = real_ifft.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+    
+    // Check if normalization is necessary
+    if (max_val - min_val) > f64::EPSILON {
+        // Apply normalization only if there's significant variation in the output
+        let scale = 255.0 / (max_val - min_val);
+        GrayImage::from_raw(
+            ifft_image.ncols() as u32,
+            ifft_image.nrows() as u32,
+            real_ifft.iter().map(|&val| {
+                let scaled_val = ((val - min_val) * scale).min(255.0).max(0.0) as u8; // Clamp the value to [0, 255]
+                scaled_val
+            }).collect()
+        ).unwrap()
+    } else {
+        // If the output is essentially uniform, treat it as zero
+        GrayImage::new(ifft_image.ncols() as u32, ifft_image.nrows() as u32)
+    } }
 /// Apply a Butterworth filter to enhance high or low frequency features.
 pub fn butterworth(
     image: &GrayImage,
@@ -164,7 +170,7 @@ pub fn butterworth(
 
      // Calculate the shape for FFT
      let fft_shape = &[padded_image.nrows(), padded_image.ncols()];
-     println!("FFT shape for Butterworth filter: {:?}", fft_shape);
+     //println!("FFT shape for Butterworth filter: {:?}", fft_shape);
  
      // Generate Butterworth filter using ndarray
      let butterworth_filter_ndarray = get_nd_butterworth_filter(
@@ -176,7 +182,7 @@ pub fn butterworth(
          squared_butterworth,
      );
 
-     println!("ndarray Butterworth filter dimensions: {:?}", butterworth_filter_ndarray.dim());
+     //println!("ndarray Butterworth filter dimensions: {:?}", butterworth_filter_ndarray.dim());
 
      // Convert ndarray to DMatrix
      let butterworth_filter = DMatrix::from_iterator(
@@ -186,7 +192,7 @@ pub fn butterworth(
      );
  
      // Debug: Print dimensions of the DMatrix filter
-     println!("DMatrix Butterworth filter dimensions: ({}, {})", butterworth_filter.nrows(), butterworth_filter.ncols());
+     //println!("DMatrix Butterworth filter dimensions: ({}, {})", butterworth_filter.nrows(), butterworth_filter.ncols());
  
      // Apply FFT, filter, and inverse FFT
      let final_image = apply_fft_and_filter(&padded_image, &butterworth_filter);

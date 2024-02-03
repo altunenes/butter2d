@@ -19,7 +19,7 @@ fn get_image_path(relative_path: &str) -> PathBuf {
     current_dir.join(relative_path)
 }
 fn main() {
-    let img_path = get_image_path("images/Lena.png");
+    let img_path = get_image_path("images/astronaut_gray.png");
     // Read the image
     let img = open(&img_path).expect("Failed to open image").to_rgb8();
     
@@ -29,7 +29,7 @@ fn main() {
     let cutoff_frequency_ratio: f64 = 0.1; // example value
     let high_pass = true; // example value
     let order = 2.0; // example value
-    let squared_butterworth = true; // example value
+    let squared_butterworth = false; // example value
     let npad = 0; // example value for padding
     // Apply Butterworth filter
     let (filtered_img, filter) = butterworth(

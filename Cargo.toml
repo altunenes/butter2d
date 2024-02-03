@@ -13,3 +13,4 @@ rustfft = "6.1.0"
 fft2d = { version = "0.1.1", features = ["nalgebra"] }
 nalgebra = "0.29"
 itertools = "0.12.0"
+ndarray-npy = "0.8.1"
