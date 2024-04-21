@@ -36,7 +36,7 @@ jobs:
           cd demo
           cargo build --release --target ${{ matrix.target }}
           mkdir -p ${{ github.workspace }}/release
-          cp "target/${{ matrix.target }}/release/demo${{ matrix.ext }}" "${{ github.workspace }}/release/demo-${{ matrix.os }}${{ matrix.ext }}"
+          cp "../target/${{ matrix.target }}/release/demo${{ matrix.ext }}" "${{ github.workspace }}/release/demo-${{ matrix.os }}${{ matrix.ext }}"
 
       - name: Zip assets
         run: |
