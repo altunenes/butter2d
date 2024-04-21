@@ -69,13 +69,18 @@ jobs:
 
       - name: Zip assets
         run: |
-            cd release
-            if [ "${{ runner.os }}" = "Windows" ]; then
-                Compress-Archive -Path "${{ matrix.bin }}/*" -DestinationPath "${{ matrix.bin }}-${{ matrix.os }}.zip"
-            else
-                zip -r "${{ matrix.bin }}-${{ matrix.os }}.zip" "${{ matrix.bin }}"
-            fi
-            shell: pwsh
+          if ("${{ runner.os }}" -eq "Windows") {
+            Compress-Archive -Path "release/${{ matrix.bin }}/*" -DestinationPath "${{ matrix.bin }}-${{ matrix.os }}.zip"
+          } else {
+            zip -r "${{ matrix.bin }}-${{ matrix.os }}.zip" "release/${{ matrix.bin }}"
+          }
+        shell: pwsh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.bin }}-${{ matrix.os }}
+          path: "${{ matrix.bin }}-${{ matrix.os }}.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
