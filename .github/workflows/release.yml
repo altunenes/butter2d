@@ -40,6 +40,10 @@ jobs:
           command: build
           args: --release --bin ${{ matrix.bin }} --manifest-path demo/Cargo.toml --target ${{ matrix.target }}
 
+      - name: List build output
+        run: |
+          ls -la demo/target/${{ matrix.target }}/release/
+
       - name: Prepare assets
         run: |
           mkdir -p release/${{ matrix.bin }}
