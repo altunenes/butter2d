@@ -44,15 +44,15 @@ jobs:
         run: |
           echo "Listing workspace root directory:"
           if [ "${{ runner.os }}" = "Windows" ]; then
-            Get-ChildItem -Path . -Force
+            dir
           else
             ls -la
           fi
           echo "Listing general target directory:"
           if [ "${{ runner.os }}" = "Windows" ]; then
-            Get-ChildItem -Path "target/${{ matrix.target }}/release/" -Force
+            dir "target/${{ matrix.target }}/release/"
           else
-            ls -la target/${{ matrix.target }}/release/
+            ls -la "target/${{ matrix.target }}/release/"
           fi
         shell: bash
 
