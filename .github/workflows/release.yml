@@ -1,0 +1,70 @@
+name: Multi-OS Binary Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            ext: ""
+          - os: windows-latest
+            target: x86_64-pc-windows-gnu
+            ext: ".exe"
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            ext: ""
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          target: ${{ matrix.target }}
+
+      - name: Build binary
+        run: |
+          cd demo
+          cargo build --release --target ${{ matrix.target }}
+
+      - name: Prepare assets
+        run: |
+          mkdir -p release
+          cp "target/${{ matrix.target }}/release/demo${{ matrix.ext }}" "release/demo-${{ matrix.os }}${{ matrix.ext }}"
+        shell: bash
+
+      - name: Zip assets
+        run: |
+          zip -r "demo-${{ matrix.os }}.zip" "release/*"
+        shell: bash
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: demo-${{ matrix.os }}
+          path: "demo-${{ matrix.os }}.zip"
+
+  release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1.14.0
+        with:
+          artifacts: "artifacts/*.zip"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
