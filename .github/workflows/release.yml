@@ -33,14 +33,14 @@ jobs:
 
       - name: Build binary
         run: |
-          cd demo
+          cd ${GITHUB_WORKSPACE}/demo
           cargo build --release --target ${{ matrix.target }}
-          mkdir -p ${{ github.workspace }}/release
-          cp "../target/${{ matrix.target }}/release/demo${{ matrix.ext }}" "${{ github.workspace }}/release/demo-${{ matrix.os }}${{ matrix.ext }}"
+          mkdir -p ${GITHUB_WORKSPACE}/release
+          cp "${GITHUB_WORKSPACE}/demo/target/${{ matrix.target }}/release/demo${{ matrix.ext }}" "${GITHUB_WORKSPACE}/release/demo-${{ matrix.os }}${{ matrix.ext }}"
 
       - name: Zip assets
         run: |
-          cd ${{ github.workspace }}
+          cd ${GITHUB_WORKSPACE}
           zip -r "demo-${{ matrix.os }}.zip" "release/"
         shell: bash
 
