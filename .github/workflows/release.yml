@@ -46,8 +46,6 @@ jobs:
           ls -la
           echo "Listing general target directory:"
           ls -la target/${{ matrix.target }}/release/
-          echo "Listing demo target directory:"
-          ls -la demo/target/${{ matrix.target }}/release/
 
       - name: Prepare assets
         run: |
