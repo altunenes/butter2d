@@ -1,0 +1,9 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: Altun
+  given-names: Enes
+orcid: https://orcid.org/0000-0002-6478-6909
+title:altunenes/butter2d: 1.0.1
+version: v1.0.1
+date-released: 2024-04-21
