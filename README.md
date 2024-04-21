@@ -1,7 +1,8 @@
 [![Rust](https://github.com/altunenes/butter2d/actions/workflows/rust.yml/badge.svg)](https://github.com/altunenes/butter2d/actions/workflows/rust.yml) 
 [![crates.io](https://img.shields.io/crates/v/butter2d.svg)](https://crates.io/crates/butter2d)
 [![docs.rs](https://docs.rs/butter2d/badge.svg)](https://docs.rs/butter2d)
-
+[![DOI](https://zenodo.org/badge/745044483.svg)](https://zenodo.org/doi/10.5281/zenodo.11004855)
+[![Multi-OS Binary Release](https://github.com/altunenes/butter2d/actions/workflows/release.yml/badge.svg)](https://github.com/altunenes/butter2d/actions/workflows/release.yml)
 # butter2d
 ![butter](https://github.com/altunenes/butter2d/assets/54986652/9ffa3304-85b3-4b80-9ded-61024a520d35)
 
