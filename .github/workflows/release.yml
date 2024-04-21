@@ -35,16 +35,13 @@ jobs:
         run: |
           cd demo
           cargo build --release --target ${{ matrix.target }}
-
-      - name: Prepare assets
-        run: |
-          mkdir -p release
-          cp "target/${{ matrix.target }}/release/demo${{ matrix.ext }}" "release/demo-${{ matrix.os }}${{ matrix.ext }}"
-        shell: bash
+          mkdir -p ${{ github.workspace }}/release
+          cp "target/${{ matrix.target }}/release/demo${{ matrix.ext }}" "${{ github.workspace }}/release/demo-${{ matrix.os }}${{ matrix.ext }}"
 
       - name: Zip assets
         run: |
-          zip -r "demo-${{ matrix.os }}.zip" "release/*"
+          cd ${{ github.workspace }}
+          zip -r "demo-${{ matrix.os }}.zip" "release/"
         shell: bash
 
       - uses: actions/upload-artifact@v2
