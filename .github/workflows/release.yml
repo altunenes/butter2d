@@ -43,9 +43,18 @@ jobs:
       - name: List workspace output
         run: |
           echo "Listing workspace root directory:"
-          ls -la
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            Get-ChildItem -Path . -Force
+          else
+            ls -la
+          fi
           echo "Listing general target directory:"
-          ls -la target/${{ matrix.target }}/release/
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            Get-ChildItem -Path "target/${{ matrix.target }}/release/" -Force
+          else
+            ls -la target/${{ matrix.target }}/release/
+          fi
+        shell: bash
 
       - name: Prepare assets
         run: |
