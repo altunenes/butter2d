@@ -40,16 +40,20 @@ jobs:
           command: build
           args: --release --bin ${{ matrix.bin }} --manifest-path demo/Cargo.toml --target ${{ matrix.target }}
 
-      - name: List build output
+      - name: List workspace output
         run: |
-          echo "Listing contents of the release directory:"
+          echo "Listing workspace root directory:"
+          ls -la
+          echo "Listing general target directory:"
+          ls -la target/${{ matrix.target }}/release/
+          echo "Listing demo target directory:"
           ls -la demo/target/${{ matrix.target }}/release/
 
       - name: Prepare assets
         run: |
           mkdir -p release/${{ matrix.bin }}
-          if [ -f "demo/target/${{ matrix.target }}/release/${{ matrix.bin }}${{ matrix.ext }}" ]; then
-            cp "demo/target/${{ matrix.target }}/release/${{ matrix.bin }}${{ matrix.ext }}" "release/${{ matrix.bin }}/${{ matrix.bin }}${{ matrix.ext }}"
+          if [ -f "target/${{ matrix.target }}/release/${{ matrix.bin }}${{ matrix.ext }}" ]; then
+            cp "target/${{ matrix.target }}/release/${{ matrix.bin }}${{ matrix.ext }}" "release/${{ matrix.bin }}/${{ matrix.bin }}${{ matrix.ext }}"
           else
             echo "Binary not found, check build settings and output."
             exit 1
