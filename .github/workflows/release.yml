@@ -31,17 +31,14 @@ jobs:
           override: true
           target: ${{ matrix.target }}
 
-      - name: Debugging - List workspace directory
-        run: ls -la ${GITHUB_WORKSPACE}
-        shell: bash
-
       - name: Build binary
         run: |
-          cd ${GITHUB_WORKSPACE}/demo
+          cd demo
           cargo build --release --target ${{ matrix.target }}
+          echo "Listing build artifacts..."
+          ls target/${{ matrix.target }}/release
           mkdir -p ${GITHUB_WORKSPACE}/release
-          cp "${GITHUB_WORKSPACE}/demo/target/${{ matrix.target }}/release/demo${{ matrix.ext }}" "${GITHUB_WORKSPACE}/release/demo-${{ matrix.os }}${{ matrix.ext }}"
-        shell: bash
+          cp "target/${{ matrix.target }}/release/demo${{ matrix.ext }}" "${{ github.workspace }}/release/demo-${{ matrix.os }}${{ matrix.ext }}"
 
       - name: Zip assets
         run: |
