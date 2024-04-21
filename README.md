@@ -31,6 +31,13 @@ To visually demonstrate the effectiveness and similarity of our Rust implementat
 
 <img src="output/spectrum_comparison.png" alt="Spectrum Comparison" width="500"/>
 
+
+## Download the Demo
+
+For a hands-on experience, download the latest demo from our [Releases page](https://github.com/altunenes/butter2d/releases/). The demo, available for Windows, Mac, and Ubuntu, features interactive controls and dynamic image processing capabilities. As you adjust sliders, changes are applied in real-time, allowing for immediate visual feedback. This setup is specifically designed to facilitate the creation of Fourier phase scrambled versions of images dynamically. For instance, if you apply a high-pass filter and then a low-pass filter, the final output will be the low-pass version of the previously high-pass filtered image. For a more precise implementation, set your parameters first and then upload the image
+
+<img src="https://github.com/altunenes/butter2d/assets/54986652/ca53e795-bf83-4a92-af0a-ee82a47c9be5" alt="Demo GIF" width="600">
+
 ### Usage
 
 Here's a quick example of applying a high-pass Butterworth filter to an image:
