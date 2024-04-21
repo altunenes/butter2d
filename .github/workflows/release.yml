@@ -42,12 +42,18 @@ jobs:
 
       - name: List build output
         run: |
+          echo "Listing contents of the release directory:"
           ls -la demo/target/${{ matrix.target }}/release/
 
       - name: Prepare assets
         run: |
           mkdir -p release/${{ matrix.bin }}
-          cp "demo/target/${{ matrix.target }}/release/${{ matrix.bin }}${{ matrix.ext }}" "release/${{ matrix.bin }}/${{ matrix.bin }}${{ matrix.ext }}"
+          if [ -f "demo/target/${{ matrix.target }}/release/${{ matrix.bin }}${{ matrix.ext }}" ]; then
+            cp "demo/target/${{ matrix.target }}/release/${{ matrix.bin }}${{ matrix.ext }}" "release/${{ matrix.bin }}/${{ matrix.bin }}${{ matrix.ext }}"
+          else
+            echo "Binary not found, check build settings and output."
+            exit 1
+          fi
         shell: bash
 
       - name: Zip assets
