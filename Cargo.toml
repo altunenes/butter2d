@@ -1,11 +1,11 @@
 workspace = { members = ["demo"] }
 [package]
 name = "butter2d"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["altunenes <enesaltun2@gmail.com>"]
 license = "MIT"
-rust-version = "1.75.0"
+rust-version = "1.78.0"
 description = "Butterworth filter for image processing."
 homepage = "https://github.com/altunenes/butter2d"
 documentation = "https://docs.rs/butter2d/latest/butter2d/"
