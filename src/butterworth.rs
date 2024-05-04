@@ -135,17 +135,13 @@ pub fn get_nd_butterworth_filter(
 /// achieving efficient performance in frequency domain analyses and operations.
 pub fn pad_image(image: &GrayImage, npad: usize) -> DMatrix<Complex<f64>> {
     let (width, height) = image.dimensions();
-    //println!("Original image dimensions: ({}, {})", width, height);
-    // Calculate the nearest power of 2 for each dimension
-    let padded_width = (width as usize + 2 * npad).next_power_of_two() as u32;
-    let padded_height = (height as usize + 2 * npad).next_power_of_two() as u32;
-    //println!("Padded image dimensions: ({}, {})", padded_width, padded_height);
-    let padded_image = resize(image, padded_width, padded_height, image::imageops::FilterType::Nearest);
+    let max_dim = std::cmp::max(width, height) as usize + 2 * npad;
+    let padded_size = max_dim.next_power_of_two() as u32; 
+    let padded_image = resize(image, padded_size, padded_size, image::imageops::FilterType::Nearest);
     DMatrix::from_iterator(
-        padded_height as usize,
-        padded_width as usize,
+        padded_size as usize,
+        padded_size as usize,
         padded_image.pixels().map(|p| Complex::new(p.0[0] as f64 / 255.0, 0.0))
-    
     )
 }
 /// This function orchestrates the core steps in frequency domain filtering: it first applies FFT to
@@ -186,14 +182,15 @@ fn apply_fft_and_filter(
             ifft_image.ncols() as u32,
             ifft_image.nrows() as u32,
             real_ifft.iter().map(|&val| {
-                let scaled_val = ((val - min_val) * scale).min(255.0).max(0.0) as u8; // Clamp the value to [0, 255]
+                let scaled_val = ((val - min_val) * scale).min(255.0).max(0.0) as u8;
                 scaled_val
             }).collect()
         ).unwrap()
     } else {
         // If the output is essentially uniform, treat it as zero
         GrayImage::new(ifft_image.ncols() as u32, ifft_image.nrows() as u32)
-    } }
+    } 
+}
 /// Applies a Butterworth filter to an image to enhance or suppress frequency components.
 ///
 /// This function performs spatial domain to frequency domain transformation, applies a Butterworth
@@ -278,7 +275,7 @@ pub fn butterworth(
          cutoff_frequency_ratio,
          order,
          high_pass,
-         true, // Assuming the image is real
+         true,
          squared_butterworth,
      );
      //println!("ndarray Butterworth filter dimensions: {:?}", butterworth_filter_ndarray.dim());
