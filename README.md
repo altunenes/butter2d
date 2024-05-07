@@ -71,7 +71,7 @@ For a hands-on experience, download the latest demo from  [Releases page](https:
 
 ### Download the Tauri App
 
-You can try my Tauri app for clearer and more precise applications. You can find the source code [here](https://github.com/altunenes/gevende)
+You can try my Tauri app for clearer and more precise applications.  [source code](https://github.com/altunenes/gevende)
 
 App:
 
