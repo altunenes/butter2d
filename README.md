@@ -71,14 +71,12 @@ For a hands-on experience, download the latest demo from  [Releases page](https:
 
 ### Download the Tauri App
 
-You can try my Tauri app for clearer and more precise applications.  [source code](https://github.com/altunenes/gevende)
-
-App:
+You can try my Tauri app For clearer and more precise implementations:
 
 <img src="https://github.com/altunenes/gevende/assets/54986652/700ee080-c6d5-416c-8420-6f454867f84d" alt="App" width="600"/>
 
 ### Download Links
-
+[source code](https://github.com/altunenes/gevende)
 | Operating System | Package Type      | Link                                                                                           |
 |------------------|-------------------|------------------------------------------------------------------------------------------------|
 | **Windows**      | Installer         | [Download](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_x64-setup.exe) |
