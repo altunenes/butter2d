@@ -75,7 +75,7 @@ You can try my Tauri app for clearer and more precise applications. You can find
 
 App:
 
-<img src="https://github.com/altunenes/gevende/assets/54986652/700ee080-c6d5-416c-8420-6f454867f84d" alt="App" width="500"/>
+<img src="https://github.com/altunenes/gevende/assets/54986652/700ee080-c6d5-416c-8420-6f454867f84d" alt="App" width="600"/>
 
 
 ## Windows
@@ -94,13 +94,13 @@ App:
 
 ## Linux
 
-- For Debian-based distributions (like Ubuntu), download the DEB package:
+- For Debian-based distributions:
   - [gevende_0.0.0_amd64.deb](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_amd64.deb)
-- For other distributions, you might prefer the AppImage, which is portable:
+- AppImage:
   - [gevende_0.0.0_amd64.AppImage](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_amd64.AppImage)
 
 ## Tarballs
 
-- If you prefer, tarballs are also available for manual installation or other purposes:
+- tarballs:
   - macOS Intel x64: [gevende_x64.app.tar.gz](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_x64.app.tar.gz)
   - macOS Apple Silicon: [gevende_aarch64.app.tar.gz](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_aarch64.app.tar.gz)
