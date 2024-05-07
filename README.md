@@ -32,13 +32,6 @@ To visually demonstrate the effectiveness and similarity of our Rust implementat
 
 <img src="output/spectrum_comparison.png" alt="Spectrum Comparison" width="500"/>
 
-
-## Download the Demo
-
-For a hands-on experience, download the latest demo from  [Releases page](https://github.com/altunenes/butter2d/releases/). The demo, available for Windows, Mac, and Ubuntu, features interactive controls and dynamic image processing capabilities. As you adjust sliders, changes are applied in real-time, allowing for immediate visual feedback. This setup is specifically designed to facilitate the creation of Fourier phase scrambled versions of images dynamically. For instance, if you apply a high-pass filter and then a low-pass filter, the final output will be the low-pass version of the previously high-pass filtered image. For a more precise implementation, set your parameters first and then upload the image.
-
-<img src="https://github.com/altunenes/butter2d/assets/54986652/ca53e795-bf83-4a92-af0a-ee82a47c9be5" alt="Demo GIF" width="600">
-
 ### Usage
 
 Here's a quick example of applying a high-pass Butterworth filter to an image:
@@ -68,3 +61,46 @@ fn main() {
     filtered_img.save("path/to/save/filtered_image.png").expect("Failed to save filtered image");
 }
 ```
+
+## Download the Demo
+
+For a hands-on experience, download the latest demo from  [Releases page](https://github.com/altunenes/butter2d/releases/). The demo, available for Windows, Mac, and Ubuntu, features interactive controls and dynamic image processing capabilities. As you adjust sliders, changes are applied in real-time, allowing for immediate visual feedback. This setup is specifically designed to facilitate the creation of Fourier phase scrambled versions of images dynamically. For instance, if you apply a high-pass filter and then a low-pass filter, the final output will be the low-pass version of the previously high-pass filtered image. For a more precise implementation, set your parameters first and then upload the image.
+
+<img src="https://github.com/altunenes/butter2d/assets/54986652/ca53e795-bf83-4a92-af0a-ee82a47c9be5" alt="Demo GIF" width="600">
+
+
+### Download the Tauri App
+
+You can try my Tauri app for clearer and more precise applications. You can find the source code [here](https://github.com/altunenes/gevende)
+
+App:
+
+<img src="https://github.com/altunenes/gevende/assets/54986652/700ee080-c6d5-416c-8420-6f454867f84d" alt="App" width="500"/>
+
+
+## Windows
+
+- For most Windows users, download the installer:
+  - [gevende_0.0.0_x64-setup.exe](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_x64-setup.exe)
+- If you prefer a Microsoft Installer package, download:
+  - [gevende_0.0.0_x64_en-US.msi](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_x64_en-US.msi)
+
+## macOS
+
+- For macOS users, download the DMG file:
+  - [gevende_0.0.0_x64.dmg](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_x64.dmg)
+- For Apple Silicon (M1, M2 chips), download the ARM DMG:
+  - [gevende_0.0.0_aarch64.dmg](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_aarch64.dmg)
+
+## Linux
+
+- For Debian-based distributions (like Ubuntu), download the DEB package:
+  - [gevende_0.0.0_amd64.deb](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_amd64.deb)
+- For other distributions, you might prefer the AppImage, which is portable:
+  - [gevende_0.0.0_amd64.AppImage](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_amd64.AppImage)
+
+## Tarballs
+
+- If you prefer, tarballs are also available for manual installation or other purposes:
+  - macOS Intel x64: [gevende_x64.app.tar.gz](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_x64.app.tar.gz)
+  - macOS Apple Silicon: [gevende_aarch64.app.tar.gz](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_aarch64.app.tar.gz)
