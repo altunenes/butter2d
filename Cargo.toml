@@ -7,7 +7,7 @@ authors = ["altunenes <enesaltun2@gmail.com>"]
 license = "MIT"
 rust-version = "1.77.2"
 description = "Butterworth filter for image processing."
-homepage = "https://github.com/altunenes/butter2d"
+repository = "https://github.com/altunenes/butter2d"
 documentation = "https://docs.rs/butter2d/latest/butter2d/"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
