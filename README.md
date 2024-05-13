@@ -64,14 +64,14 @@ fn main() {
 
 ## Download the Demo
 
-For a hands-on experience, download the latest demo from  [Releases page](https://github.com/altunenes/butter2d/releases/). The demo, available for Windows, Mac, and Ubuntu, features interactive controls and dynamic image processing capabilities. As you adjust sliders, changes are applied in real-time, allowing for immediate visual feedback. This setup is specifically designed to facilitate the creation of Fourier phase scrambled versions of images dynamically. For instance, if you apply a high-pass filter and then a low-pass filter, the final output will be the low-pass version of the previously high-pass filtered image. For a more precise implementation, set your parameters first and then upload the image.
+For a hands-on experience, download the latest demo from  [Releases page](https://github.com/altunenes/butter2d/releases/). The demo, available for Windows, Mac, and Ubuntu, features interactive controls and dynamic image processing capabilities. As you adjust sliders, changes are applied in real-time, allowing for immediate visual feedback. This setup is specifically designed to facilitate the creation of fun scrambled versions of images dynamically. For instance, if you apply a high-pass filter and then a low-pass filter, the final output will be the low-pass version of the previously high-pass filtered image. For a more precise implementation, set your parameters first and then upload the image.
 
 <img src="https://github.com/altunenes/butter2d/assets/54986652/ca53e795-bf83-4a92-af0a-ee82a47c9be5" alt="Demo GIF" width="600">
 
 
 ### Download the Tauri App
 
-You can try my Tauri app For clearer and more precise implementations:
+Don't you like the WGPU version? You can also try my Tauri app For clearer and more precise implementations:
 
 <img src="https://github.com/altunenes/gevende/assets/54986652/700ee080-c6d5-416c-8420-6f454867f84d" alt="App" width="600"/>
 
