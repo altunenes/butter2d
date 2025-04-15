@@ -1,4 +1,4 @@
-workspace = { members = ["demo", "wasm_demo"] }
+workspace = { members = ["wasm_demo"] }
 [package]
 name = "butter2d"
 version = "0.1.2"
