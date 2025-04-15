@@ -1,14 +1,22 @@
 [![Rust](https://github.com/altunenes/butter2d/actions/workflows/rust.yml/badge.svg)](https://github.com/altunenes/butter2d/actions/workflows/rust.yml) 
 [![crates.io](https://img.shields.io/crates/v/butter2d.svg)](https://crates.io/crates/butter2d)
-[![docs.rs](https://docs.rs/butter2d/badge.svg)](https://docs.rs/butter2d)
 [![DOI](https://zenodo.org/badge/745044483.svg)](https://zenodo.org/doi/10.5281/zenodo.11004855)
-[![Multi-OS Binary Release](https://github.com/altunenes/butter2d/actions/workflows/release.yml/badge.svg)](https://github.com/altunenes/butter2d/actions/workflows/release.yml)
 # butter2d
 ![butter](https://github.com/altunenes/butter2d/assets/54986652/9ffa3304-85b3-4b80-9ded-61024a520d35)
 
 Pure Rust Implementation of the Butterworth Filter
 
 This crate provides a pure Rust implementation of the Butterworth filter, designed for high-performance spatial frequency filtering of images. It is inspired by and seeks to replicate the functionality of the Butterworth filter as implemented in the popular Python library, [scikit-image](https://github.com/scikit-image/scikit-image/blob/2ac3e141e8d2e31aa0ec10afc3a935396b0618fc/skimage/filters/_fft_based.py#L58-L185).
+
+
+## ✨ Live WASM Demo
+
+Try the interactive Butterworth filter demo directly in your browser, built with `butter2d` and WebAssembly:
+
+➡️ **[Live Demo Link](https://altunenes.github.io/butter2d/)** ⬅️
+
+This demo allows you to upload your own images (or use a sample) and apply the Butterworth filter with adjustable parameters in real-time.
+
 
 ## Overview
 
@@ -61,29 +69,3 @@ fn main() {
     filtered_img.save("path/to/save/filtered_image.png").expect("Failed to save filtered image");
 }
 ```
-
-## Download the Demo
-
-For a hands-on experience, download the latest demo from  [Releases page](https://github.com/altunenes/butter2d/releases/). The demo, available for Windows, Mac, and Ubuntu, features interactive controls and dynamic image processing capabilities. As you adjust sliders, changes are applied in real-time, allowing for immediate visual feedback. This setup is specifically designed to facilitate the creation of fun scrambled versions of images dynamically. For instance, if you apply a high-pass filter and then a low-pass filter, the final output will be the low-pass version of the previously high-pass filtered image. For a more precise implementation, set your parameters first and then upload the image.
-
-<img src="https://github.com/altunenes/butter2d/assets/54986652/ca53e795-bf83-4a92-af0a-ee82a47c9be5" alt="Demo GIF" width="600">
-
-
-### Download the Tauri App
-
-Don't you like the WGPU version? You can also try my Tauri app For clearer and more precise implementations:
-
-<img src="https://github.com/altunenes/gevende/assets/54986652/700ee080-c6d5-416c-8420-6f454867f84d" alt="App" width="600"/>
-
-### Download Links
-[source code](https://github.com/altunenes/gevende)
-| Operating System | Package Type      | Link                                                                                           |
-|------------------|-------------------|------------------------------------------------------------------------------------------------|
-| **Windows**      | Installer         | [Download](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_x64-setup.exe) |
-|                  | MSI Package       | [Download](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_x64_en-US.msi)  |
-| **macOS**        | DMG for Intel     | [Download](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_x64.dmg)        |
-|                  | DMG for Apple M1  | [Download](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_aarch64.dmg)    |
-| **Linux**        | Debian Package    | [Download](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_amd64.deb)      |
-|                  | AppImage          | [Download](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_0.0.0_amd64.AppImage) |
-| **Tarballs**     | macOS Intel       | [Download](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_x64.app.tar.gz)       |
-|                  | macOS Apple M1    | [Download](https://github.com/altunenes/gevende/releases/download/app-v1.0.0/gevende_aarch64.app.tar.gz)   |
