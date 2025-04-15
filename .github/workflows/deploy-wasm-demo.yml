@@ -1,0 +1,78 @@
+name: Deploy WASM Demo to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Allows manual triggering
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WASM demo
+        run: |
+          cd wasm_demo
+          wasm-pack build --target web --out-dir pkg
+          
+      - name: Prepare demo for deployment
+        run: |
+          # Create the _site directory that will be deployed
+          mkdir -p _site
+          
+          # Copy the www content
+          cp -r wasm_demo/www/* _site/
+          
+          # Copy the pkg directory for the WASM module
+          cp -r wasm_demo/pkg _site/
+          
+          # Create a sample image if it doesn't exist
+          mkdir -p _site/assets
+          if [ ! -f _site/assets/sample_image.jpg ]; then
+            # Download a sample image
+            curl -o _site/assets/sample_image.jpg https://source.unsplash.com/random/800x600/?nature
+          fi
+          
+          # Create a placeholder image
+          echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" | base64 -d > _site/assets/placeholder.png
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: '_site'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
