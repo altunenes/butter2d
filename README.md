@@ -1,6 +1,8 @@
 [![Rust](https://github.com/altunenes/butter2d/actions/workflows/rust.yml/badge.svg)](https://github.com/altunenes/butter2d/actions/workflows/rust.yml) 
 [![crates.io](https://img.shields.io/crates/v/butter2d.svg)](https://crates.io/crates/butter2d)
 [![DOI](https://zenodo.org/badge/745044483.svg)](https://zenodo.org/doi/10.5281/zenodo.11004855)
+[![Deploy WASM](https://github.com/altunenes/butter2d/actions/workflows/deploy-wasm-demo.yml/badge.svg)](https://github.com/altunenes/butter2d/actions/workflows/deploy-wasm-demo.yml)
+
 # butter2d
 ![butter](https://github.com/altunenes/butter2d/assets/54986652/9ffa3304-85b3-4b80-9ded-61024a520d35)
 
@@ -14,8 +16,6 @@ This crate provides a pure Rust implementation of the Butterworth filter, design
 Try the interactive Butterworth filter demo directly in your browser, built with `butter2d` and WebAssembly:
 
 ➡️ **[Live Demo Link](https://altunenes.github.io/butter2d/)** ⬅️
-
-This demo allows you to upload your own images (or use a sample) and apply the Butterworth filter with adjustable parameters in real-time.
 
 
 ## Overview
