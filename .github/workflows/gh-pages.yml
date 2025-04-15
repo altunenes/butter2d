@@ -1,0 +1,57 @@
+name: Build and Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WASM Demo
+        run: |
+          cd wasm_demo
+          wasm-pack build --target web --out-dir pkg
+
+      - name: Setup Demo Files
+        run: |
+          # Create docs directory (GitHub Pages standard directory)
+          mkdir -p docs
+          
+          # Copy www content to docs
+          cp -r wasm_demo/www/* docs/
+          
+          # Copy pkg directory to docs
+          cp -r wasm_demo/pkg docs/
+          
+          # Make sure assets directory exists
+          mkdir -p docs/assets
+          
+          # Create placeholder image
+          echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" | base64 -d > docs/assets/placeholder.png
+          
+          # Download sample image
+          curl -L -o docs/assets/sample_image.jpg https://source.unsplash.com/random/800x600/?nature
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git add docs/
+          git commit -m "Update GitHub Pages demo" || echo "No changes to commit"
+          git push
