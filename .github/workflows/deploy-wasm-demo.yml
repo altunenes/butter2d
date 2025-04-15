@@ -3,8 +3,9 @@ name: Deploy WASM Demo to GitHub Pages
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: # Allows manual triggering
+  workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
@@ -16,56 +17,69 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Build job
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v3
+        
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
         with:
-          targets: wasm32-unknown-unknown
-
+          profile: minimal
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+      
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-
-      - name: Build WASM demo
+        run: |
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      
+      - name: Build WASM Demo
         run: |
           cd wasm_demo
           wasm-pack build --target web --out-dir pkg
-          
-      - name: Prepare demo for deployment
+      
+      - name: Setup Demo Files
         run: |
-          # Create the _site directory that will be deployed
+          # Create output directory
           mkdir -p _site
           
-          # Copy the www content
+          # Copy www content
           cp -r wasm_demo/www/* _site/
           
-          # Copy the pkg directory for the WASM module
+          # Copy pkg directory
           cp -r wasm_demo/pkg _site/
           
-          # Create a sample image if it doesn't exist
+          # Create assets directory
           mkdir -p _site/assets
-          if [ ! -f _site/assets/sample_image.jpg ]; then
-            # Download a sample image
-            curl -o _site/assets/sample_image.jpg https://source.unsplash.com/random/800x600/?nature
+          
+          # Create placeholder image if needed
+          if [ ! -f _site/assets/placeholder.png ]; then
+            # A simple 1x1 transparent pixel
+            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" | base64 -d > _site/assets/placeholder.png
           fi
           
-          # Create a placeholder image
-          echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" | base64 -d > _site/assets/placeholder.png
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-
+          # Download sample image if needed
+          if [ ! -f _site/assets/sample_image.jpg ]; then
+            curl -L -o _site/assets/sample_image.jpg https://source.unsplash.com/random/800x600/?nature
+          fi
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: '_site'
+          path: _site
 
+  # Deployment job
   deploy:
-    environment: github-pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
     steps:
