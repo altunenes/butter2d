@@ -1,7 +1,7 @@
 workspace = { members = ["wasm_demo"] }
 [package]
 name = "butter2d"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 authors = ["altunenes <enesaltun2@gmail.com>"]
 license = "MIT"
@@ -9,12 +9,10 @@ rust-version = "1.85.0"
 description = "Butterworth filter for image processing."
 repository = "https://github.com/altunenes/butter2d"
 documentation = "https://docs.rs/butter2d/latest/butter2d/"
+categories = ["Images", "Science", "science::neuroscience"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 image = "0.25.6"
 ndarray = "0.16.1"
-num-complex = "0.4.6"
 rustfft = "6.2.0"
 nalgebra = "0.33.2"
-itertools = "0.14.0"
-ndarray-npy = "0.9.1"

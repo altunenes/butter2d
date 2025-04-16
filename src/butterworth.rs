@@ -3,7 +3,6 @@ use rustfft::num_complex::Complex;
 use image::GrayImage;
 use rustfft::FftPlanner;
 use nalgebra::DMatrix;
-use image::imageops::resize;
 
 /// Performs 2D Fast Fourier Transform on a matrix
 pub fn fft2d(matrix: &DMatrix<Complex<f64>>) -> DMatrix<Complex<f64>> {
