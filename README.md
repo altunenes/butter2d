@@ -4,7 +4,6 @@
 [![Deploy WASM](https://github.com/altunenes/butter2d/actions/workflows/deploy-wasm-demo.yml/badge.svg)](https://github.com/altunenes/butter2d/actions/workflows/deploy-wasm-demo.yml)
 
 # butter2d
-![butter](https://github.com/altunenes/butter2d/assets/54986652/9ffa3304-85b3-4b80-9ded-61024a520d35)
 
 Pure Rust Implementation of the Butterworth Filter
 
