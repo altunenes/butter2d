@@ -155,18 +155,50 @@ pub fn get_nd_butterworth_filter(
 /// * `DMatrix<Complex<f64>>` - A matrix of complex numbers where the real part represents the padded
 ///   and resized image, and the imaginary part is set to zero. This format is compatible with FFT
 ///   operations that require complex input.
-pub fn pad_image(image: &GrayImage, npad: usize) -> DMatrix<Complex<f64>> {
-    let (width, height) = image.dimensions();
-    let max_dim = std::cmp::max(width, height) as usize + 2 * npad;
-    let padded_size = max_dim.next_power_of_two() as u32; 
-    let padded_image = resize(image, padded_size, padded_size, image::imageops::FilterType::Nearest);
+pub fn pad_image(image: &GrayImage, npad: usize) -> (DMatrix<Complex<f64>>, (u32, u32)) {
+    let (original_width, original_height) = image.dimensions();
     
-    DMatrix::from_iterator(
-        padded_size as usize,
-        padded_size as usize,
+    let padded_width = (original_width as usize + 2 * npad).next_power_of_two() as u32;
+    let padded_height = (original_height as usize + 2 * npad).next_power_of_two() as u32;
+    
+    let mut padded_image = GrayImage::new(padded_width, padded_height);
+    
+    let x_offset = (padded_width - original_width) / 2;
+    let y_offset = (padded_height - original_height) / 2;
+    
+    for y in 0..original_height {
+        for x in 0..original_width {
+            let pixel = image.get_pixel(x, y);
+            padded_image.put_pixel(x + x_offset, y + y_offset, *pixel);
+        }
+    }
+    let complex_matrix = DMatrix::from_iterator(
+        padded_height as usize,
+        padded_width as usize,
         padded_image.pixels().map(|p| Complex::new(p.0[0] as f64 / 255.0, 0.0))
-    )
+    );
+    (complex_matrix, (original_width, original_height))
 }
+
+// Function to extract the original portion from the filtered image
+fn extract_original_portion(filtered_image: &GrayImage, original_dimensions: (u32, u32)) -> GrayImage {
+    let (original_width, original_height) = original_dimensions;
+    let (current_width, current_height) = filtered_image.dimensions();
+    
+    // If dimensions are already the same, return a clone
+    if original_width == current_width && original_height == current_height {
+        return filtered_image.clone();
+    }
+    
+    // Calculate the extraction box (centered)
+    let x_offset = (current_width - original_width) / 2;
+    let y_offset = (current_height - original_height) / 2;
+    
+    // Extract the portion matching the original dimensions
+    image::imageops::crop_imm(filtered_image, x_offset, y_offset, original_width, original_height)
+        .to_image()
+}
+
 
 /// This function orchestrates the core steps in frequency domain filtering: it first applies FFT to
 /// the input image, then applies the Butterworth filter mask, and finally performs an inverse FFT to
@@ -280,16 +312,17 @@ pub fn butterworth(
     order: f64,
     squared_butterworth: bool,
     npad: usize,
-) -> (GrayImage, DMatrix<Complex<f64>>) { // Return type changed to a tuple
+) -> (GrayImage, DMatrix<Complex<f64>>) {
     if cutoff_frequency_ratio < 0.0 || cutoff_frequency_ratio > 0.5 {
         panic!("cutoff_frequency_ratio should be in the range [0, 0.5]");
     }
     
     // Pad the image and prepare for FFT
-    let padded_image = pad_image(image, npad);
+    let (padded_image, original_dimensions) = pad_image(image, npad);
     let fft_shape = &[padded_image.nrows(), padded_image.ncols()];
     
     // Generate the Butterworth filter in frequency domain
+    // The filter needs to match the padded dimensions, not the original
     let butterworth_filter_ndarray = get_nd_butterworth_filter(
         fft_shape,
         cutoff_frequency_ratio,
@@ -307,8 +340,10 @@ pub fn butterworth(
     );
     
     // Apply FFT, filter, and inverse FFT
-    let final_image = apply_fft_and_filter(&padded_image, &butterworth_filter);
+    let filtered_image = apply_fft_and_filter(&padded_image, &butterworth_filter);
+    // Extract the portion corresponding to the original image dimensions
+    let original_portion = extract_original_portion(&filtered_image, original_dimensions);
     
-    // Return both the final image and the filter used
-    (final_image, butterworth_filter)
+    // Return both the image and the filter used
+    (original_portion, butterworth_filter)
 }

@@ -81,7 +81,6 @@ pub fn apply_filter(image_data_ptr: &[u8], width: u32, height: u32, params: &Fil
     
     Ok(rgba_data)
 }
-
 #[wasm_bindgen]
 pub fn process_image_base64(image_base64: &str, params: &FilterParameters) -> Result<String, JsValue> {
     let base64_str = if image_base64.starts_with("data:image") {
