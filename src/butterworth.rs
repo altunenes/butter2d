@@ -1,9 +1,74 @@
-use ndarray::{Array,ArrayD, IxDyn};
+use ndarray::{Array, ArrayD, IxDyn};
 use rustfft::num_complex::Complex;
 use image::GrayImage;
-use fft2d::nalgebra::{fft_2d, ifft_2d};
-use image::imageops::resize;
+use rustfft::FftPlanner;
 use nalgebra::DMatrix;
+use image::imageops::resize;
+
+/// Performs 2D Fast Fourier Transform on a matrix
+pub fn fft2d(matrix: &DMatrix<Complex<f64>>) -> DMatrix<Complex<f64>> {
+    let rows = matrix.nrows();
+    let cols = matrix.ncols();
+    let mut planner = FftPlanner::new();
+    
+    // Create a new matrix to store the result
+    let mut result = matrix.clone();
+    
+    // Perform FFT on each row
+    for i in 0..rows {
+        let mut row_data: Vec<Complex<f64>> = (0..cols).map(|j| matrix[(i, j)]).collect();
+        let fft = planner.plan_fft_forward(cols);
+        fft.process(&mut row_data);
+        for j in 0..cols {
+            result[(i, j)] = row_data[j];
+        }
+    }
+    
+    // Perform FFT on each column
+    for j in 0..cols {
+        let mut col_data: Vec<Complex<f64>> = (0..rows).map(|i| result[(i, j)]).collect();
+        let fft = planner.plan_fft_forward(rows);
+        fft.process(&mut col_data);
+        for i in 0..rows {
+            result[(i, j)] = col_data[i];
+        }
+    }
+    
+    result
+}
+
+/// Performs 2D Inverse Fast Fourier Transform on a matrix
+pub fn ifft2d(matrix: &DMatrix<Complex<f64>>) -> DMatrix<Complex<f64>> {
+    let rows = matrix.nrows();
+    let cols = matrix.ncols();
+    let mut planner = FftPlanner::new();
+    
+    // Create a new matrix to store the result
+    let mut result = matrix.clone();
+    
+    // Perform IFFT on each row
+    for i in 0..rows {
+        let mut row_data: Vec<Complex<f64>> = (0..cols).map(|j| matrix[(i, j)]).collect();
+        let ifft = planner.plan_fft_inverse(cols);
+        ifft.process(&mut row_data);
+        for j in 0..cols {
+            result[(i, j)] = row_data[j] / Complex::new(cols as f64, 0.0);
+        }
+    }
+    
+    // Perform IFFT on each column
+    for j in 0..cols {
+        let mut col_data: Vec<Complex<f64>> = (0..rows).map(|i| result[(i, j)]).collect();
+        let ifft = planner.plan_fft_inverse(rows);
+        ifft.process(&mut col_data);
+        for i in 0..rows {
+            result[(i, j)] = col_data[i] / Complex::new(rows as f64, 0.0);
+        }
+    }
+    
+    result
+}
+
 /// Constructs an N-dimensional Butterworth filter mask for Fourier Transform operations.
 ///
 /// This function generates a mask to be applied in the frequency domain, useful for
@@ -45,39 +110,7 @@ pub fn get_nd_butterworth_filter(
     _real: bool,
     squared_butterworth: bool,
 ) -> ArrayD<Complex<f64>> {
-    let mut ranges = Vec::new();
-
-    for &d in shape.iter() {
-        let axis_range: Vec<f64> = Array::linspace(-(d as f64 - 1.0) / 2.0, (d as f64 - 1.0) / 2.0, d)
-            .into_raw_vec()
-            .iter()
-            .map(|&x| x.powi(2))
-            .collect();
-        ranges.push(axis_range);
-    }
-
-    let mut grid = Array::zeros(IxDyn(&[shape[0], shape[1]]));
-    let (cx, cy) = (shape[0] / 2, shape[1] / 2);
-    for (x, y) in itertools::iproduct!(0..shape[0], 0..shape[1]) {
-        let dx = (x as f64 - cx as f64).powi(2);
-        let dy = (y as f64 - cy as f64).powi(2);
-        grid[[x, y]] = Complex::new((dx + dy).powf(order / 2.0), 0.0);
-    }
-    let _grid_shape = shape.iter().map(|&d| d).collect::<Vec<_>>();
-    // Correctly create a frequency grid that is centered
-    let mut q2 = Array::zeros(IxDyn(&[shape[0], shape[1]]));
-    let (cx, cy) = ((shape[0] / 2) as f64, (shape[1] / 2) as f64);
-    for (x, y) in itertools::iproduct!(0..shape[0], 0..shape[1]) {
-        let dx = ((x as f64 - cx) / (shape[0] as f64)).powi(2);
-        let dy = ((y as f64 - cy) / (shape[1] as f64)).powi(2);
-        let distance = dx + dy; // This is the squared distance from the center of the frequency domain
-        q2[[x, y]] = Complex::new(distance, 0.0);
-    }
-    q2 = q2.mapv_into(|x| x.powf(order));
-
-    // Calculate the Butterworth filter using the correct grid
-    let ones = Array::from_elem(q2.dim(), Complex::new(1.0, 0.0));
-    let _denominator = ones.clone() + (&q2 * factor.powi(2 * order as i32));
+    // Create a frequency domain grid
     let wfilt = Array::from_shape_fn(IxDyn(shape), |idx| {
         let len = shape.len();
         let mut distance2 = 0.0;
@@ -101,6 +134,7 @@ pub fn get_nd_butterworth_filter(
     });
     wfilt
 }
+
 /// Pads and resizes an image to the nearest powers of two dimensions.
 ///
 /// This function is designed to prepare an image for Fourier Transform operations by padding its
@@ -120,30 +154,20 @@ pub fn get_nd_butterworth_filter(
 /// # Returns
 /// * `DMatrix<Complex<f64>>` - A matrix of complex numbers where the real part represents the padded
 ///   and resized image, and the imaginary part is set to zero. This format is compatible with FFT
-///   operations that require complex input. The `DMatrix` type comes from the `nalgebra` crate and
-///   represents a dynamic two-dimensional matrix.
-///
-/// # Notes
-/// The resizing step uses the nearest neighbor interpolation to avoid introducing interpolation
-/// artifacts that could affect the Fourier Transform analysis. This method is chosen for its simplicity
-/// and effectiveness in preserving the original image's pixel values. However, users should be aware
-/// that resizing to significantly larger dimensions can introduce pixelation due to the nearest neighbor
-/// method.
-///
-/// The resulting matrix is intended for use in FFT-based processing, where having dimensions as powers
-/// of two can significantly optimize computation time. This preconditioning step is crucial for
-/// achieving efficient performance in frequency domain analyses and operations.
+///   operations that require complex input.
 pub fn pad_image(image: &GrayImage, npad: usize) -> DMatrix<Complex<f64>> {
     let (width, height) = image.dimensions();
     let max_dim = std::cmp::max(width, height) as usize + 2 * npad;
     let padded_size = max_dim.next_power_of_two() as u32; 
     let padded_image = resize(image, padded_size, padded_size, image::imageops::FilterType::Nearest);
+    
     DMatrix::from_iterator(
         padded_size as usize,
         padded_size as usize,
         padded_image.pixels().map(|p| Complex::new(p.0[0] as f64 / 255.0, 0.0))
     )
 }
+
 /// This function orchestrates the core steps in frequency domain filtering: it first applies FFT to
 /// the input image, then applies the Butterworth filter mask, and finally performs an inverse FFT to
 /// return the filtered image back to the spatial domain. A crucial normalization step is included after
@@ -159,21 +183,36 @@ pub fn pad_image(image: &GrayImage, npad: usize) -> DMatrix<Complex<f64>> {
 ///
 /// # Returns
 /// * `GrayImage` - The filtered image, transformed back into the spatial domain and normalized to
-///   utilize the full range of grayscale values (0-255). The `GrayImage` type is part of the `image` crate,
-///   representing an image in grayscale format.
+///   utilize the full range of grayscale values (0-255).
 fn apply_fft_and_filter(
     padded_image: &DMatrix<Complex<f64>>,
     butterworth_filter: &DMatrix<Complex<f64>>,
 ) -> GrayImage {
-    let fft_image = fft_2d(padded_image.clone());
+    // Apply FFT to the image
+    let fft_image = fft2d(padded_image);
+    
+    // Check dimensions match
     assert_eq!(fft_image.nrows(), butterworth_filter.nrows());
     assert_eq!(fft_image.ncols(), butterworth_filter.ncols());
-    let filtered_image = fft_image.zip_map(butterworth_filter, |img_val, filter_val| img_val * filter_val);
-    let ifft_image = ifft_2d(filtered_image);
-    // Compute the range of the real parts
+    
+    // Apply the filter in frequency domain
+    let mut filtered_image = DMatrix::zeros(fft_image.nrows(), fft_image.ncols());
+    for i in 0..fft_image.nrows() {
+        for j in 0..fft_image.ncols() {
+            filtered_image[(i, j)] = fft_image[(i, j)] * butterworth_filter[(i, j)];
+        }
+    }
+    
+    // Apply inverse FFT to get back to spatial domain
+    let ifft_image = ifft2d(&filtered_image);
+    
+    // Extract real parts for image creation
     let real_ifft: Vec<f64> = ifft_image.iter().map(|c| c.re).collect();
+    
+    // Find min and max values for normalization
     let min_val = real_ifft.iter().fold(f64::INFINITY, |a, &b| a.min(b));
     let max_val = real_ifft.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+    
     // Check if normalization is necessary
     if (max_val - min_val) > f64::EPSILON {
         // Apply normalization only if there's significant variation in the output
@@ -191,6 +230,7 @@ fn apply_fft_and_filter(
         GrayImage::new(ifft_image.ncols() as u32, ifft_image.nrows() as u32)
     } 
 }
+
 /// Applies a Butterworth filter to an image to enhance or suppress frequency components.
 ///
 /// This function performs spatial domain to frequency domain transformation, applies a Butterworth
@@ -233,29 +273,6 @@ fn apply_fft_and_filter(
 /// # Panics
 /// The function panics if the `cutoff_frequency_ratio` is not in the range [0.0, 0.5], ensuring that
 /// filter parameters are within acceptable bounds for meaningful frequency domain processing.
-///
-/// # Normalization Process
-/// Unlike the skimage implementation in Python, this Rust version explicitly normalizes the output
-/// image after applying the inverse FFT. This step adjusts the pixel values to span the full grayscale
-/// range, enhancing visibility and contrast. The normalization process calculates the minimum and maximum
-/// values in the resulting image and scales the pixel values to lie between 0 and 255.
-///
-/// This manual normalization is essential because the FFT and inverse FFT operations can produce
-/// pixel values outside the standard grayscale range. Without normalization, the resulting image might
-/// appear too dark or too bright, or contrast may be lost. It's worth noting that even slight numerical
-/// differences in the normalization process between Rust and Python implementations can lead to subtle
-/// variations in the filtered images. Such differences are scientifically significant in image processing
-/// tasks, as they may affect the visibility of features or the interpretation of results. These variations
-/// are typically due to the inherent differences in how Rust and Python handle floating-point arithmetic
-/// and image data structures.
-///
-/// # Scientific Implications
-/// The inclusion of normalization is critical for maintaining the scientific integrity of the image
-/// processing pipeline. By ensuring that the output image uses the full grayscale range effectively,
-/// this function helps preserve the quantitative relationship between different regions of the image.
-/// However, users should be aware of the potential for minor discrepancies between results obtained
-/// with this Rust implementation and those from other languages or libraries, particularly in tasks
-/// requiring precise quantitative analysis.
 pub fn butterworth(
     image: &GrayImage,
     cutoff_frequency_ratio: f64,
@@ -267,30 +284,31 @@ pub fn butterworth(
     if cutoff_frequency_ratio < 0.0 || cutoff_frequency_ratio > 0.5 {
         panic!("cutoff_frequency_ratio should be in the range [0, 0.5]");
     }
-     let padded_image = pad_image(image, npad);
-     let fft_shape = &[padded_image.nrows(), padded_image.ncols()];
-     //println!("FFT shape for Butterworth filter: {:?}", fft_shape);
-     let butterworth_filter_ndarray = get_nd_butterworth_filter(
-         fft_shape,
-         cutoff_frequency_ratio,
-         order,
-         high_pass,
-         true,
-         squared_butterworth,
-     );
-     //println!("ndarray Butterworth filter dimensions: {:?}", butterworth_filter_ndarray.dim());
-     let butterworth_filter = DMatrix::from_iterator(
-         fft_shape[0],
-         fft_shape[1],
-         butterworth_filter_ndarray.iter().cloned().map(|x| Complex::new(x.re, x.im))
-     );
-     // Debug: Print dimensions of the DMatrix filter
-     //println!("DMatrix Butterworth filter dimensions: ({}, {})", butterworth_filter.nrows(), butterworth_filter.ncols());
-     // Apply FFT, filter, and inverse FFT
-     let final_image = apply_fft_and_filter(&padded_image, &butterworth_filter);
-     // Return both the final image and the filter used
-     (final_image, butterworth_filter) // Return a tuple containing the image and the filter
-  }
-
-
-  
+    
+    // Pad the image and prepare for FFT
+    let padded_image = pad_image(image, npad);
+    let fft_shape = &[padded_image.nrows(), padded_image.ncols()];
+    
+    // Generate the Butterworth filter in frequency domain
+    let butterworth_filter_ndarray = get_nd_butterworth_filter(
+        fft_shape,
+        cutoff_frequency_ratio,
+        order,
+        high_pass,
+        true,
+        squared_butterworth,
+    );
+    
+    // Convert ndarray filter to DMatrix for use with our FFT implementation
+    let butterworth_filter = DMatrix::from_iterator(
+        fft_shape[0],
+        fft_shape[1],
+        butterworth_filter_ndarray.iter().cloned()
+    );
+    
+    // Apply FFT, filter, and inverse FFT
+    let final_image = apply_fft_and_filter(&padded_image, &butterworth_filter);
+    
+    // Return both the final image and the filter used
+    (final_image, butterworth_filter)
+}
