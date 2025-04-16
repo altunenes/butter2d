@@ -1,23 +1,19 @@
+console.log("Initializing butter2d WASM demo");
 import init, { init_panic_hook, FilterParameters, process_image_base64 } from './pkg/butter2d_wasm.js';
 
 // DOM elements (will initialize after module loads)
 let imageUpload, loadSampleBtn, cutoffFrequency, cutoffValue;
 let orderSlider, orderValue, highPassCheckbox, squaredButterworthCheckbox;
 let applyFilterBtn, originalImage, filteredImage;
+let imageUrlInput, loadFromUrlBtn;
 
 // Current image as base64
 let currentImageBase64 = null;
 
 async function run() {
-  console.log("Initializing WASM module...");
-  
   try {
     await init();
-    console.log("WASM module initialized successfully");
-    
     init_panic_hook();
-    console.log("Panic hook initialized");
-    
     initializeUI();
   } catch (error) {
     console.error("Failed to initialize WASM module:", error);
@@ -32,8 +28,6 @@ async function run() {
 }
 
 function initializeUI() {
-  console.log("Initializing UI...");
-  
   // Get DOM elements
   imageUpload = document.getElementById('imageUpload');
   loadSampleBtn = document.getElementById('loadSample');
@@ -46,6 +40,8 @@ function initializeUI() {
   applyFilterBtn = document.getElementById('applyFilter');
   originalImage = document.getElementById('originalImage');
   filteredImage = document.getElementById('filteredImage');
+  imageUrlInput = document.getElementById('imageUrl');
+  loadFromUrlBtn = document.getElementById('loadFromUrl');
 
   cutoffFrequency.addEventListener('input', () => {
     cutoffValue.textContent = cutoffFrequency.value;
@@ -56,13 +52,11 @@ function initializeUI() {
   });
 
   imageUpload.addEventListener('change', (event) => {
-    console.log("File selected");
     const file = event.target.files[0];
     if (file && file.type.match('image.*')) {
       const reader = new FileReader();
       
       reader.onload = (e) => {
-        console.log("File read complete");
         currentImageBase64 = e.target.result;
         originalImage.src = currentImageBase64;
         filteredImage.src = 'assets/placeholder.png';
@@ -73,7 +67,6 @@ function initializeUI() {
   });
 
   loadSampleBtn.addEventListener('click', () => {
-    console.log("Loading sample image");
     fetch('assets/sample_image.jpg')
       .then(response => response.blob())
       .then(blob => {
@@ -87,12 +80,47 @@ function initializeUI() {
       })
       .catch(error => {
         console.error('Error loading sample image:', error);
+        alert('Error loading sample image');
+      });
+  });
+  loadFromUrlBtn.addEventListener('click', () => {
+    const url = imageUrlInput.value.trim();
+    if (!url) {
+      alert('Please enter an image URL');
+      return;
+    }
+    loadFromUrlBtn.disabled = true;
+    loadFromUrlBtn.textContent = 'Loading...';
+    
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          currentImageBase64 = e.target.result;
+          originalImage.src = currentImageBase64;
+          filteredImage.src = 'assets/placeholder.png';
+        };
+        reader.readAsDataURL(blob);
+      })
+      .catch(error => {
+        console.error('Error loading image from URL:', error);
+        alert('Error loading image. The URL might be restricted or invalid.');
+      })
+      .finally(() => {
+        loadFromUrlBtn.disabled = false;
+        loadFromUrlBtn.textContent = 'Load from URL';
       });
   });
 
   applyFilterBtn.addEventListener('click', () => {
     if (!currentImageBase64) {
-      alert('Please upload an image or load the sample image first.');
+      alert('Please upload an image, load the sample image, or load an image from URL first.');
       return;
     }
     
@@ -101,7 +129,6 @@ function initializeUI() {
     applyFilterBtn.textContent = 'Processing...';
     
     try {
-      console.log("Creating filter parameters");
       // Get filter parameters
       const params = new FilterParameters(
         parseFloat(cutoffFrequency.value),
@@ -110,20 +137,20 @@ function initializeUI() {
         squaredButterworthCheckbox.checked
       );
       
-      console.log("Processing image...");
       // Process the image
       const result = process_image_base64(currentImageBase64, params);
-      console.log("Image processed successfully");
       filteredImage.src = result;
     } catch (error) {
       console.error('Error applying filter:', error);
-      alert('Error applying filter: ' + error.message);
+      alert('Error applying filter');
     } finally {
       applyFilterBtn.disabled = false;
       applyFilterBtn.textContent = 'Apply Filter';
     }
   });
-
+  cutoffValue.textContent = cutoffFrequency.value;
+  orderValue.textContent = orderSlider.value;
+  
   loadSampleBtn.click();
 }
 

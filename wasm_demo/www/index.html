@@ -14,17 +14,22 @@
       <button id="loadSample">Load Sample Image</button>
     </div>
     
+    <div class="url-section">
+      <input type="text" id="imageUrl" placeholder="Enter image URL">
+      <button id="loadFromUrl">Load from URL</button>
+    </div>
+    
     <div class="controls">
       <div class="control-group">
         <label for="cutoffFrequency">Cutoff Frequency Ratio:</label>
-        <input type="range" id="cutoffFrequency" min="0.01" max="0.49" step="0.01" value="0.25">
-        <span id="cutoffValue">0.25</span>
+        <input type="range" id="cutoffFrequency" min="0.01" max="0.49" step="0.01" value="0.06">
+        <span id="cutoffValue">0.06</span>
       </div>
       
       <div class="control-group">
         <label for="order">Filter Order:</label>
-        <input type="range" id="order" min="1" max="20" step="1" value="2">
-        <span id="orderValue">2</span>
+        <input type="range" id="order" min="1" max="20" step="1" value="7">
+        <span id="orderValue">7</span>
       </div>
       
       <div class="control-group checkbox">
