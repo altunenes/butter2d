@@ -36,9 +36,6 @@ To visually demonstrate the effectiveness and similarity of our Rust implementat
 
 <img src="output/visual_comparison.png" alt="Visual Comparison" width="500"/>
 
-### Spectrum Comparison
-
-<img src="output/spectrum_comparison.png" alt="Spectrum Comparison" width="500"/>
 
 ### Usage
 
