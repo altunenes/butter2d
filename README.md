@@ -22,21 +22,6 @@ Try the interactive Butterworth filter demo directly in your browser, built with
 
 The Butterworth filter offers a more robust method for applying spatial frequency filters to images compared to traditional FFT/IFFT-based methods. Filters with sharp cutoffs can often lead to the Gibbs phenomenon, where undesirable ringing artifacts appear near edges in the image. This issue is particularly problematic in applications such as EEG experiments (particularly low/mid visual ones that affect P100 amplitudes in the visual cortex) and other scenarios involving low-frequency signals. By providing a smoother transition between the passband and stopband, the Butterworth filter mitigates these effects, making it a preferred choice among vision scientists and image-processing experts.
 
-## Features
-
-- Pure Rust implementation for optimal performance and integration with Rust-based image processing pipelines.
-- Support for both high-pass and low-pass filtering, with customizable cutoff frequency and filter order parameters.
-- Detailed examples and documentation to help users quickly integrate the filter into their projects.
-
-## Comparisons: Rust vs Python with Same Input Values
-
-To visually demonstrate the effectiveness and similarity of our Rust implementation compared to the Python (scikit-image) version, here are comparison images. These comparisons help illustrate both the visual and frequency spectrum outcomes using identical input values across both implementations.
-
-### Visual Comparison
-
-<img src="output/visual_comparison.png" alt="Visual Comparison" width="500"/>
-
-
 ### Usage
 
 Here's a quick example of applying a high-pass Butterworth filter to an image:
