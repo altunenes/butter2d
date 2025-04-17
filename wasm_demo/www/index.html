@@ -42,6 +42,11 @@
         <label for="squaredButterworth">Squared Butterworth</label>
       </div>
       
+      <div class="control-group checkbox">
+        <input type="checkbox" id="colorMode" checked>
+        <label for="colorMode">Color Mode</label>
+      </div>
+      
       <button id="applyFilter">Apply Filter</button>
     </div>
     
@@ -74,6 +79,9 @@
       </p>
       <p>
         <strong>Squared Butterworth:</strong> When checked, the filter response is squared, resulting in a sharper transition.
+      </p>
+      <p>
+        <strong>Color Mode:</strong> When checked, processes each RGB channel separately, preserving color information. When unchecked, converts to grayscale first.
       </p>
     </div>
     

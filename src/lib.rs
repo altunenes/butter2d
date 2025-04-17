@@ -1,5 +1,6 @@
 mod butterworth;
 pub use butterworth::butterworth;
+pub use butterworth::butterworth_color;
 // For testing purposes:
 pub use butterworth::pad_image;
 pub use butterworth::get_nd_butterworth_filter;

@@ -1,7 +1,7 @@
 workspace = { members = ["wasm_demo"] }
 [package]
 name = "butter2d"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 authors = ["altunenes <enesaltun2@gmail.com>"]
 license = "MIT"

@@ -141,3 +141,44 @@ pub fn process_image_base64(image_base64: &str, params: &FilterParameters) -> Re
     let base64_output = general_purpose::STANDARD.encode(&buffer);
     Ok(format!("data:image/png;base64,{}", base64_output))
 }
+#[wasm_bindgen]
+pub fn process_image_base64_color(image_base64: &str, params: &FilterParameters) -> Result<String, JsValue> {
+    let base64_str = if image_base64.starts_with("data:image") {
+        image_base64.split(",").nth(1).unwrap_or(image_base64)
+    } else {
+        image_base64
+    };
+    
+    let image_data = match general_purpose::STANDARD.decode(base64_str) {
+        Ok(data) => data,
+        Err(e) => return Err(JsValue::from_str(&format!("Failed to decode base64: {}", e))),
+    };
+    
+    let img = match image::load_from_memory(&image_data) {
+        Ok(img) => img,
+        Err(e) => return Err(JsValue::from_str(&format!("Failed to load image: {}", e))),
+    };
+    // Convert to RGB (preserving color)
+    let rgb_img = img.to_rgb8();
+    let (filtered_img, _) = butter2d::butterworth_color(
+        &rgb_img,
+        params.cutoff_frequency_ratio,
+        params.high_pass,
+        params.order,
+        params.squared_butterworth,
+        0,
+    );
+    
+    let mut buffer = Vec::new();
+    if let Err(e) = PngEncoder::new(&mut buffer).write_image(
+        filtered_img.as_raw(),
+        filtered_img.width(),
+        filtered_img.height(),
+        image::ColorType::Rgb8.into()
+    ) {
+        return Err(JsValue::from_str(&format!("Failed to encode image: {}", e)));
+    }
+    
+    let base64_output = general_purpose::STANDARD.encode(&buffer);
+    Ok(format!("data:image/png;base64,{}", base64_output))
+}

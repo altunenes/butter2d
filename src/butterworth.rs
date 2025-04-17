@@ -3,7 +3,7 @@ use rustfft::num_complex::Complex;
 use image::GrayImage;
 use rustfft::FftPlanner;
 use nalgebra::DMatrix;
-
+use image::RgbImage;
 /// Performs 2D Fast Fourier Transform on a matrix
 pub fn fft2d(matrix: &DMatrix<Complex<f64>>) -> DMatrix<Complex<f64>> {
     let rows = matrix.nrows();
@@ -345,4 +345,77 @@ pub fn butterworth(
     
     // Return both the image and the filter used
     (original_portion, butterworth_filter)
+}
+/// Applies a Butterworth filter to a color image, processing each channel separately.
+///
+/// This function extends the grayscale Butterworth filter to work with color images by:
+/// 1. Splitting the color image into individual channels (R, G, B)
+/// 2. Applying the Butterworth filter to each channel separately
+/// 3. Recombining the filtered channels into a new color image
+///
+/// # Arguments
+/// * `image` - A reference to an `RgbImage` representing the input color image.
+/// * `cutoff_frequency_ratio` - A floating-point value between 0.0 and 0.5 that determines the cutoff
+///   frequency as a ratio of the Nyquist frequency.
+/// * `high_pass` - A boolean indicating the type of filter to apply. If `true`, the function applies a
+///   high-pass filter, attenuating frequencies below the cutoff. If `false`, a low-pass filter is applied.
+/// * `order` - A floating-point value that specifies the order of the Butterworth filter. 
+/// * `squared_butterworth` - A boolean indicating whether to square the Butterworth filter response.
+/// * `npad` - The number of pixels by which to pad the input image before applying the FFT.
+///
+/// # Returns
+/// A tuple containing two elements:
+/// * `RgbImage` - The filtered color image.
+/// * `DMatrix<Complex<f64>>` - The Butterworth filter used in the frequency domain.
+///
+/// # Panics
+/// The function panics if the `cutoff_frequency_ratio` is not in the range [0.0, 0.5].
+pub fn butterworth_color(
+    image: &RgbImage,
+    cutoff_frequency_ratio: f64,
+    high_pass: bool,
+    order: f64,
+    squared_butterworth: bool,
+    npad: usize,
+) -> (RgbImage, DMatrix<Complex<f64>>) {
+    let (width, height) = image.dimensions();
+    let mut filtered_image = RgbImage::new(width, height);
+    
+    // Extract each channel, filter it, and store the filter for the first channel
+    let mut filter = None;
+    
+    for channel in 0..3 {
+        // Extract the current channel to a grayscale image
+        let mut gray_channel = GrayImage::new(width, height);
+        
+        for y in 0..height {
+            for x in 0..width {
+                let pixel = image.get_pixel(x, y);
+                gray_channel.put_pixel(x, y, image::Luma([pixel[channel]]));
+            }
+        }
+        
+        let (filtered_channel, channel_filter) = crate::butterworth(
+            &gray_channel,
+            cutoff_frequency_ratio,
+            high_pass,
+            order,
+            squared_butterworth,
+            npad,
+        );
+        
+        if channel == 0 {
+            filter = Some(channel_filter);
+        }
+        
+        for y in 0..height {
+            for x in 0..width {
+                let mut pixel = *filtered_image.get_pixel(x, y);
+                pixel[channel] = filtered_channel.get_pixel(x, y)[0];
+                filtered_image.put_pixel(x, y, pixel);
+            }
+        }
+    }
+    
+    (filtered_image, filter.unwrap())
 }

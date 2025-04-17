@@ -1,9 +1,9 @@
 console.log("Initializing butter2d WASM demo");
-import init, { init_panic_hook, FilterParameters, process_image_base64 } from './pkg/butter2d_wasm.js';
+import init, { init_panic_hook, FilterParameters, process_image_base64, process_image_base64_color } from './pkg/butter2d_wasm.js';
 
 // DOM elements (will initialize after module loads)
 let imageUpload, loadSampleBtn, cutoffFrequency, cutoffValue;
-let orderSlider, orderValue, highPassCheckbox, squaredButterworthCheckbox;
+let orderSlider, orderValue, highPassCheckbox, squaredButterworthCheckbox, colorModeCheckbox;
 let applyFilterBtn, originalImage, filteredImage;
 let imageUrlInput, loadFromUrlBtn;
 
@@ -37,6 +37,7 @@ function initializeUI() {
   orderValue = document.getElementById('orderValue');
   highPassCheckbox = document.getElementById('highPass');
   squaredButterworthCheckbox = document.getElementById('squaredButterworth');
+  colorModeCheckbox = document.getElementById('colorMode');
   applyFilterBtn = document.getElementById('applyFilter');
   originalImage = document.getElementById('originalImage');
   filteredImage = document.getElementById('filteredImage');
@@ -137,8 +138,12 @@ function initializeUI() {
         squaredButterworthCheckbox.checked
       );
       
-      // Process the image
-      const result = process_image_base64(currentImageBase64, params);
+      let result;
+      if (colorModeCheckbox.checked) {
+        result = process_image_base64_color(currentImageBase64, params);
+      } else {
+        result = process_image_base64(currentImageBase64, params);
+      }
       filteredImage.src = result;
     } catch (error) {
       console.error('Error applying filter:', error);
