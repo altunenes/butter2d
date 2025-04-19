@@ -46,7 +46,6 @@
         <input type="checkbox" id="colorMode" checked>
         <label for="colorMode">Color Mode</label>
       </div>
-      
       <button id="applyFilter">Apply Filter</button>
     </div>
     
@@ -83,6 +82,12 @@
       <p>
         <strong>Color Mode:</strong> When checked, processes each RGB channel separately, preserving color information. When unchecked, converts to grayscale first.
       </p>
+      <div class="warning-box">
+        <h4>⚠️ Note on Image Dimensions</h4>
+        <p>
+          Images with non-square dimensions may show cross-shaped artifacts. For best results, use square images or balanced aspect ratios when possible.
+        </p>
+      </div>
     </div>
     
     <footer>
